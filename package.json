@@ -1,0 +1,10 @@
+{
+  "name": "studio-seven-site",
+  "private": true,
+  "description": "Studio Seven flower shop + coffee bar website, with orders and payments through Square.",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "dev": "netlify dev"
+  }
+}

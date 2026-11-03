@@ -1,0 +1,51 @@
+{
+  "_note": "Single source of truth for the menu. The website reads this file, and the server re-prices every order from it. Prices are in cents (CAD). Edit names and prices here, then redeploy.",
+  "currency": "CAD",
+  "taxPercent": "13",
+  "deliveryFee": 1200,
+  "coffee": {
+    "sizes": [{ "n": "8 oz", "d": 0 }, { "n": "12 oz", "d": 60 }, { "n": "16 oz", "d": 110 }],
+    "milks": [{ "n": "Whole", "d": 0 }, { "n": "2%", "d": 0 }, { "n": "Oat", "d": 75 }, { "n": "Almond", "d": 75 }, { "n": "No milk", "d": 0 }],
+    "adds": [{ "n": "Extra shot", "d": 100 }, { "n": "Vanilla", "d": 60 }, { "n": "Lavender honey", "d": 75 }, { "n": "Rose cardamom", "d": 75 }],
+    "defaultSize": 1,
+    "categories": [
+      { "name": "Espresso", "items": [
+        { "id": "esp", "n": "Espresso", "p": 325, "d": "A double shot of the house blend.", "sz": false, "milk": false },
+        { "id": "amer", "n": "Americano", "p": 375, "d": "Espresso and hot water.", "milk": false },
+        { "id": "cort", "n": "Cortado", "p": 450, "d": "Half espresso, half steamed milk.", "sz": false },
+        { "id": "latte", "n": "Latte", "p": 525, "d": "Double shot, lots of silky milk." },
+        { "id": "capp", "n": "Cappuccino", "p": 500, "d": "More foam, less milk." },
+        { "id": "mocha", "n": "Mocha", "p": 575, "d": "With dark chocolate." }
+      ]},
+      { "name": "House drinks", "items": [
+        { "id": "lav", "n": "Lavender Honey Latte", "p": 625, "d": "Ontario honey and lavender we steep ourselves.", "tag": "House" },
+        { "id": "rose", "n": "Rose Cardamom Latte", "p": 625, "d": "Our flower-shop drink. Floral, a little spicy.", "tag": "House" },
+        { "id": "maple", "n": "Maple Oat Cortado", "p": 550, "d": "Kawartha maple and oat milk.", "sz": false, "tag": "Local" }
+      ]},
+      { "name": "No coffee", "items": [
+        { "id": "matcha", "n": "Matcha Latte", "p": 575, "d": "Lightly sweetened." },
+        { "id": "chai", "n": "Chai Latte", "p": 525, "d": "Spiced black tea and milk." },
+        { "id": "choc", "n": "Hot Chocolate", "p": 450, "d": "Dark chocolate, whipped cream on top." },
+        { "id": "tea", "n": "Loose Leaf Tea", "p": 350, "d": "Ask what's on today.", "milk": false }
+      ]},
+      { "name": "Baking", "items": [
+        { "id": "crois", "n": "Butter Croissant", "p": 400, "d": "Out of the oven every morning.", "bake": true },
+        { "id": "scone", "n": "Scone of the Week", "p": 425, "d": "Changes every Monday.", "bake": true },
+        { "id": "cookie", "n": "Brown Butter Cookie", "p": 325, "d": "With flaky salt.", "bake": true }
+      ]}
+    ]
+  },
+  "flowers": {
+    "occasions": ["Just because", "Birthday", "Anniversary", "Sympathy", "Thank you", "Get well", "New baby", "A holiday"],
+    "preorderMinDays": 2,
+    "preorderMaxDays": 60,
+    "items": [
+      { "id": "market", "n": "Market Bunch", "p": 2800, "d": "Hand-tied, wrapped in paper, whatever looks best that week.", "sizes": [{ "n": "Standard", "d": 0 }, { "n": "Generous", "d": 1400 }], "flag": "Bestseller" },
+      { "id": "arr", "n": "Arrangement in a Vase", "p": 6500, "d": "Loose and gardeny, in a vase you keep.", "sizes": [{ "n": "Petite", "d": 0 }, { "n": "Classic", "d": 2500 }, { "n": "Lush", "d": 6000 }] },
+      { "id": "bud", "n": "Bud Vase Trio", "p": 3600, "d": "Three little vases for a table or windowsill.", "sizes": [{ "n": "Trio", "d": 0 }] },
+      { "id": "pair", "n": "Flowers & Coffee", "p": 4800, "d": "A market bunch and a card good for two drinks. Our favourite thank-you.", "sizes": [{ "n": "One", "d": 0 }], "flag": "Gift" },
+      { "id": "sub", "n": "Flower Subscription", "p": 12000, "d": "A fresh bunch every Friday for four weeks.", "sizes": [{ "n": "4 weeks", "d": 0 }, { "n": "8 weeks", "d": 11000 }] },
+      { "id": "dried", "n": "Dried Wreath", "p": 5500, "d": "Dried florals on grapevine. Lasts all season.", "sizes": [{ "n": "14 in", "d": 0 }, { "n": "20 in", "d": 3000 }] }
+    ]
+  }
+}
