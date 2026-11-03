@@ -5,6 +5,6 @@
   "engines": { "node": ">=20" },
   "scripts": {
     "test": "node --test test/*.test.js",
-    "dev": "netlify dev"
+    "dev": "vercel dev"
   }
 }

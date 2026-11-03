@@ -194,9 +194,9 @@ function openCart(){
 }
 $("#cartBtn").addEventListener("click",openCart);
 
-/* ---------- FORMS: sent to Netlify Forms, which emails staff ---------- */
-async function sendForm(name,fields){
-  const res=await fetch("/",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({"form-name":name,...fields}).toString()});
+/* ---------- FORMS: saved to Square customers and emailed to the shop (api/signup.js) ---------- */
+async function sendForm(type,fields){
+  const res=await fetch("/api/signup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({type,...fields,company:""})});
   if(!res.ok)throw new Error("send");
 }
 $("#wlForm").addEventListener("submit",async e=>{
