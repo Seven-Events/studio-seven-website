@@ -37,7 +37,7 @@ const VIEWS=["home","coffee","flowers","waitlist"];
 function route(){
   const raw=(location.hash||"#home").slice(1), h=VIEWS.includes(raw)?raw:"home";
   $$("[data-view]").forEach(v=>v.hidden=v.dataset.view!==h);
-  $$(".nav a").forEach(a=>{if(a.dataset.tab===h)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
+  $$("[data-tab]").forEach(a=>{if(a.dataset.tab===h)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
   if(raw==="cart-booking")$("#cart-booking").scrollIntoView({behavior:"smooth"});else window.scrollTo(0,0);
 }
 window.addEventListener("hashchange",route);
