@@ -219,6 +219,64 @@ input:focus,select:focus,textarea:focus{border-color:var(--forest);outline:none}
 .btn[disabled]{opacity:.6;cursor:progress}
 .toast{position:fixed;left:18px;right:18px;bottom:calc(var(--navh) + 14px + env(safe-area-inset-bottom,0px));max-width:420px;margin:0 auto;background:var(--forest);color:var(--ivory);padding:12px 18px;border-radius:10px;font-size:.9rem;text-align:center;opacity:0;transform:translateY(12px);transition:.2s;z-index:50;pointer-events:none}
 .toast.on{opacity:1;transform:none}
+/* ---------- wide screens: a proper website, not a stretched phone ---------- */
+.topnav{display:none}
+.hero-text{display:flex;flex-direction:column;gap:18px}
+.band .wrap.cart2{display:grid}
+.cartpic{width:100%}
+@media (min-width:900px){
+  :root{--navh:0px}
+  .wrap{max-width:1180px;padding-left:max(40px,env(safe-area-inset-left,0px));padding-right:max(40px,env(safe-area-inset-right,0px))}
+  .nav{display:none}
+  main{padding-bottom:0}
+  .top .wrap{padding-block:12px}
+  .mark img{height:44px}
+  .topnav{display:flex;gap:6px;margin-left:auto;margin-right:12px}
+  .topnav a{color:var(--forest);text-decoration:none;font-weight:500;font-size:.95rem;padding:10px 14px;border-radius:10px}
+  .topnav a:hover{background:var(--band1)}
+  .topnav a[aria-current="page"]{background:var(--nav-on);font-weight:600}
+  .cats{top:calc(env(safe-area-inset-top,0px) + 69px);max-width:1180px;padding-left:max(40px,env(safe-area-inset-left,0px))}
+
+  .hero{padding-block:64px 72px}
+  .hero .wrap{display:grid;grid-template-columns:1.05fr 1fr;gap:56px;align-items:center}
+  .hero-text{display:flex;flex-direction:column;gap:22px}
+  .hero h1{font-size:clamp(5rem,7.4vw,7.2rem)}
+  .hero p{font-size:1.15rem}
+  .collage{grid-template-rows:200px 200px 150px;margin-top:0}
+  .cl span{font-size:1.5rem}
+  .ribbon{margin:30px -20px}
+
+  .band{padding-block:72px}
+  .band .wrap{gap:32px}
+  .sh h2{font-size:3.6rem}
+  .tiles{grid-template-columns:repeat(3,1fr);gap:28px 22px}
+  .tiles.feat{grid-template-columns:repeat(4,1fr)}
+  .band .wrap>.btn.block{width:auto;align-self:flex-start;padding:0 34px}
+
+  .brick .wrap{display:grid;grid-template-columns:1fr 1.15fr;column-gap:72px;align-items:start}
+  .brick .sh{grid-row:1 / span 2}
+  .brick .drinks{grid-column:2}
+  .brick .wrap>.btn{grid-column:2;justify-self:start}
+
+  .band .wrap.cart2{grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+  .cartpic{aspect-ratio:4/3}
+
+  .blushb .wrap{flex-direction:row;align-items:flex-end;justify-content:space-between}
+  .notes{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+  .notes div{flex-direction:column;justify-content:flex-start;gap:4px;border-bottom:0;border-top:1.5px solid var(--forest);padding-top:14px}
+  .notes dd{text-align:left}
+  .foot .wrap{flex-direction:row;align-items:center;gap:24px}
+
+  .page-h{padding-block:56px 60px}
+  .page-h h1{font-size:5.4rem}
+  .menu{display:block;columns:2;column-gap:72px}
+  .menu h2{break-after:avoid}
+  .dish{break-inside:avoid}
+  #v-waitlist .formcard{max-width:680px;padding:36px}
+
+  .sheet{max-width:600px;margin-inline:auto;bottom:24px;border-radius:26px;max-height:calc(100vh - 48px);transform:translateY(calc(100% + 40px))}
+  .toast{bottom:28px}
+}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}.ribbon .track{animation:none}}
 @media (min-width:640px){.tiles{grid-template-columns:repeat(3,1fr)}.cart2{grid-template-columns:1fr 1fr;align-items:center}}
 </style>
@@ -227,6 +285,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--forest);outline:none}
 <header class="top">
   <div class="wrap">
     <a class="mark" href="#home" aria-label="Studio Seven home"><img src="/img/logo.webp" alt=""></a>
+    <nav class="topnav" aria-label="Main"><a href="#home" data-tab="home">Home</a><a href="#coffee" data-tab="coffee">Coffee</a><a href="#flowers" data-tab="flowers">Flowers</a><a href="#cart-booking">Coffee cart</a><a href="#waitlist" data-tab="waitlist">The list</a></nav>
     <button class="bag" id="cartBtn" type="button">Your order <span class="n" id="cartN">0</span></button>
   </div>
 </header>
@@ -236,10 +295,12 @@ input:focus,select:focus,textarea:focus{border-color:var(--forest);outline:none}
   <div id="v-home" data-view="home">
     <section class="hero">
       <div class="wrap">
+        <div class="hero-text">
         <span class="kicker">Opening soon · Downtown Omemee</span>
         <div class="headline"><h1>Fresh flowers <em class="it">&amp;</em> good coffee</h1><a class="shopall" href="#flowers">Shop flowers</a></div>
         <p>A little flower shop and coffee bar on the main street. Grab a latte, leave with an armful of whatever's blooming.</p>
         <div class="btns"><a class="btn" href="#waitlist">Join the opening list</a><a class="btn out" href="#coffee">Order coffee</a></div>
+        </div>
         <div class="collage">
           <a class="cl c1" href="#flowers"><img src="/img/sprigf.webp" alt=""><span>Market bunches</span></a>
           <a class="cl c2" href="#coffee"><img src="/img/sprig.webp" alt=""><span>Coffee bar</span></a>
@@ -254,7 +315,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--forest);outline:none}
     <section class="band">
       <div class="wrap">
         <div class="sh"><span class="kicker">From the cooler</span><h2>Flowers for any day</h2><p>Put together in the shop the morning they go out. Pick up, or we'll deliver around Omemee and Lindsay.</p></div>
-        <div class="tiles" id="featTiles"></div>
+        <div class="tiles feat" id="featTiles"></div>
         <a class="btn block" href="#flowers">Shop all flowers</a>
       </div>
     </section>
