@@ -1,6 +1,6 @@
 {
   "_note": "Website-only settings. Items, prices, photos and stock live in Square (Square Dashboard > Items). This file says which Square categories appear on the website and in what order, plus a few things Square doesn't hold.",
-  "coffeeCategories": ["Espresso", "House drinks", "No coffee", "Baking"],
+  "coffeeCategories": ["Espresso", "House drinks", "No coffee"],
   "flowerCategories": ["Flowers"],
   "taxPercent": "13",
   "deliveryFee": 1200,

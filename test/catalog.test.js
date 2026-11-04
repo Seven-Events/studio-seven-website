@@ -7,12 +7,13 @@ const clone = () => JSON.parse(JSON.stringify(fx.objects));
 
 test("groups Square items into the website's coffee categories and flowers, in Square's order", () => {
   const m = buildMenu(fx.objects, fx.counts, "L1");
-  assert.deepEqual(m.coffee.categories.map((c) => c.name), ["Espresso", "House drinks", "No coffee", "Baking"]);
+  assert.deepEqual(m.coffee.categories.map((c) => c.name), ["Espresso", "House drinks", "No coffee"]);
   assert.deepEqual(m.coffee.categories[0].items.map((i) => i.n), ["Espresso", "Americano", "Cortado", "Latte", "Cappuccino", "Mocha"]);
   assert.equal(m.flowers.items[0].n, "Market Bunch");
   assert.equal(m.flowers.items[0].img, "/img/sprig.webp");
   assert.equal(m.flowers.items[0].tag, "Bestseller");
   assert.ok(!JSON.stringify(m).includes("Mug")); // in-store only
+  assert.ok(!JSON.stringify(m).includes("Croissant")); // Baking isn't a website category
 });
 
 test("modifier lists become choices, with Square's defaults and required flag", () => {

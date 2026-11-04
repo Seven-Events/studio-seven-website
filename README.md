@@ -99,7 +99,7 @@ Everything on the website menu comes from **Square Dashboard > Items** (or **Ite
 
 | Square category | Shows on the website under |
 | --- | --- |
-| Espresso, House drinks, No coffee, Baking | Coffee, as tabs in that order |
+| Espresso, House drinks, No coffee | Coffee, as tabs in that order |
 | Flowers | Flowers |
 
 Items in any other category (for example "Merch" or staff-only items) stay in-store only. To rename, add or reorder the coffee tabs, change the lists in `shop-settings.json`, or ask Claude to.
@@ -116,7 +116,7 @@ Items in any other category (for example "Merch" or staff-only items) stay in-st
 **Stock**
 
 - **Flowers and limited items:** turn on **Track stock** for the variation and enter the quantity for the Omemee location. Website and in-store sales both count it down. When it hits zero, the website shows **Sold out** and won't take more orders.
-- **Run out of something for the day,** like oat milk or croissants? Mark the variation **Sold out** for the location in Square. Turn it off again when it's back.
+- **Run out of something for the day,** like oat milk or a flower? Mark the variation **Sold out** for the location in Square. Turn it off again when it's back.
 
 **Taxes:** the website charges HST at the rate in `shop-settings.json` (13%) on every order, separately from your in-store tax settings in Square.
 

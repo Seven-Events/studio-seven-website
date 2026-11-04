@@ -22,8 +22,8 @@ test("sends Square catalog ids, so Square prices the order itself", () => {
 });
 
 test("one-size items need no variation id", () => {
-  const { lines } = priceCart([{ id: "I_crois", q: 1 }], menu, NOW);
-  assert.equal(lines[0].catalog_object_id, "V_crois_0");
+  const { lines } = priceCart([{ id: "I_esp", q: 1 }], menu, NOW);
+  assert.equal(lines[0].catalog_object_id, "V_esp_0");
 });
 
 test("rejects unknown items, options from other lists, missing required choices and silly quantities", () => {
@@ -31,7 +31,7 @@ test("rejects unknown items, options from other lists, missing required choices 
   assert.throws(() => priceCart([{ id: "I_latte", v: "V_capp_1", mods: ["ML_MILK_0"], q: 1 }], menu, NOW), OrderError);
   assert.throws(() => priceCart([{ id: "I_latte", v: "V_latte_1", q: 1 }], menu, NOW), /choose milk/);
   assert.throws(() => priceCart([{ id: "I_latte", v: "V_latte_1", mods: ["ML_MILK_0", "ML_MILK_1"], q: 1 }], menu, NOW), /Too many/);
-  assert.throws(() => priceCart([{ id: "I_crois", mods: ["ML_ADDS_0"], q: 1 }], menu, NOW), /isn't available/);
+  assert.throws(() => priceCart([{ id: "I_esp", mods: ["ML_MILK_0"], q: 1 }], menu, NOW), /isn't available/);
   assert.throws(() => priceCart([{ ...latte, q: 0 }], menu, NOW), OrderError);
   assert.throws(() => priceCart([{ ...latte, q: 1.5 }], menu, NOW), OrderError);
   assert.throws(() => priceCart([], menu, NOW), OrderError);
