@@ -3,6 +3,7 @@
 The Studio Seven flower shop and coffee bar website (downtown Omemee, Ontario).
 Customers order coffee ahead, buy flowers, pre-order flowers for a date, join the opening list, and ask about the mobile coffee cart.
 
+- **The menu comes from Square.** Items, prices, photos, milk and add-on choices, and stock are all managed in your Square Item Library, the same list the counter uses.
 - **Orders and payments go through Square.** Paid orders show up in Square Point of Sale for staff, just like an in-person order.
 - **Opening-list sign-ups and coffee cart requests** are saved as customers in Square, and the shop gets an email for each one through Resend.
 - **The site is hosted on Vercel.**
@@ -11,6 +12,8 @@ Customers order coffee ahead, buy flowers, pre-order flowers for a date, join th
 
 ```
 Customer's phone ──> Vercel (website in public/ + small functions in api/)
+                        │
+                        ├─ /api/menu ──────> Square: Item Library + stock (cached for 1 minute)
                         │
                         ├─ /api/checkout ──> Square: create order ──> Square POS (staff get it)
                         │                     └─> Square: take payment (card, Apple Pay, Google Pay)
@@ -21,11 +24,12 @@ Customer's phone ──> Vercel (website in public/ + small functions in api/)
 
 | File | What it is |
 | --- | --- |
-| `public/menu.json` | **The menu.** Names, descriptions and prices (in cents). Edit this to change the menu. |
+| `shop-settings.json` | Which Square categories show on the website and in what order, plus HST, the delivery fee, flower occasions, pre-order window and little tags like "Bestseller". |
 | `public/index.html` | The page itself: layout, colours and wording. |
 | `public/app.js` | What happens when people tap things: menu, order sheet, checkout, forms. |
 | `api/` | Vercel functions. They are thin wrappers around the code in `lib/`. |
-| `lib/order.js` | Prices every order from `menu.json` on the server, so nobody can change a price in their browser. |
+| `lib/catalog.js` | Reads the Item Library and stock from Square and turns it into the website menu. |
+| `lib/order.js` | Checks every order against the live Square menu. Orders use Square's own items, so Square sets the prices and nobody can change one in their browser. |
 | `lib/checkout.js` | Creates the Square order and charges the customer. |
 | `lib/signup.js` | Saves opening-list and coffee cart requests to Square, and emails the shop. |
 | `test/` | Automated checks. Run `npm test`. |
@@ -80,15 +84,45 @@ Square's test card is `4111 1111 1111 1111`, with any future expiry date, any CV
 
 ### 5. Test, then go live
 
-1. In sandbox mode, place a coffee order, a flower order, a flower pre-order and a delivery, all with the test card. Check that each one shows up in Square's sandbox dashboard with the right details.
-2. Join the opening list and send a coffee cart request. Check that the shop email arrives and the customer appears in Square's sandbox **Customers**.
-3. When you're ready, repeat Square steps 3 to 5 on the **Production** tab (production has its own customer groups), update the variables (`SQUARE_ENV=production`), and redeploy.
-4. *Optional:* to switch on Apple Pay, register the website's domain under **Apple Pay** in the Square developer dashboard. Google Pay works without this step.
-5. Add your own domain (for example studioseven.ca) under Vercel **Settings > Domains**.
+1. Add a few items in Square's Item Library in the website categories (see "Managing the menu in Square"). The website menu is empty until you do.
+2. In sandbox mode, place a coffee order, a flower order, a flower pre-order and a delivery, all with the test card. Check that each one shows up in Square's sandbox dashboard with the right details.
+3. Join the opening list and send a coffee cart request. Check that the shop email arrives and the customer appears in Square's sandbox **Customers**.
+4. When you're ready, repeat Square steps 3 to 5 on the **Production** tab (production has its own customer groups), update the variables (`SQUARE_ENV=production`), and redeploy.
+5. *Optional:* to switch on Apple Pay, register the website's domain under **Apple Pay** in the Square developer dashboard. Google Pay works without this step.
+6. Add your own domain (for example studioseven.ca) under Vercel **Settings > Domains**.
+
+## Managing the menu in Square
+
+Everything on the website menu comes from **Square Dashboard > Items** (or **Items** in the Square app). Changes show on the website within about a minute.
+
+**Categories decide where things go.** Put each item in one of these Square categories:
+
+| Square category | Shows on the website under |
+| --- | --- |
+| Espresso, House drinks, No coffee, Baking | Coffee, as tabs in that order |
+| Flowers | Flowers |
+
+Items in any other category (for example "Merch" or staff-only items) stay in-store only. To rename, add or reorder the coffee tabs, change the lists in `shop-settings.json`, or ask Claude to.
+
+**Items**
+
+- **Name, description and price** are the item's name, description and price in Square.
+- **Sizes** are the item's **variations**, such as "8 oz / 12 oz / 16 oz" or "Standard / Generous". Each one has its own price. An item with one variation has no size choice.
+- **Photos:** add an image to the item in Square. The first image shows on the flower tiles and at the top of the order sheet. Square-shaped or portrait photos look best on the flower tiles.
+- **Milk, syrups and add-ons** are **modifier sets** attached to the item. A modifier set that allows one choice shows as buttons, and one that allows several shows as checkboxes. Mark a set **required** to make customers pick, for example milk on a latte. A modifier that's on by default is pre-selected.
+- **To hide an item from the website**, move it out of the website categories, archive it, or remove the shop location from it.
+- **Order:** items appear in the order you arrange them within the category in Square.
+
+**Stock**
+
+- **Flowers and limited items:** turn on **Track stock** for the variation and enter the quantity for the Omemee location. Website and in-store sales both count it down. When it hits zero, the website shows **Sold out** and won't take more orders.
+- **Run out of something for the day,** like oat milk or croissants? Mark the variation **Sold out** for the location in Square. Turn it off again when it's back.
+
+**Taxes:** the website charges HST at the rate in `shop-settings.json` (13%) on every order, separately from your in-store tax settings in Square.
 
 ## Everyday changes
 
-- **Change the menu or prices:** edit `public/menu.json` and save it to GitHub. Vercel redeploys within a minute. Prices are in cents, so `525` means $5.25.
+- **Change the menu, prices, photos or stock:** do it in Square, as above.
 - **Pause online orders** (before opening day, or on a slammed morning): set `ORDERS_OPEN` to `false` in Vercel and redeploy. The menu stays visible, but checkout explains that ordering is paused.
 - **See the opening list:** in Square Dashboard, open **Customers**, filter by the "Opening list" group, and export it when you're ready to email everyone.
 
@@ -97,12 +131,13 @@ Square's test card is `4111 1111 1111 1111`, with any future expiry date, any CV
 - Coffee is pickup only, either as soon as possible (ready in about 10 minutes) or at a chosen time up to about 3.5 hours ahead.
 - Flowers can be picked up or delivered (a $12 fee, Omemee, Lindsay and nearby) and pre-ordered 2 to 60 days ahead.
 - An order with coffee and flowers is a single pickup. For flower delivery, customers order flowers separately, because each Square order holds one pickup or delivery.
-- HST (13%) is added by Square, so the total the customer pays always matches Square's own calculation.
+- HST (13%) is added to each order, and Square calculates the total, so the amount charged always matches Square's own calculation.
+- An order is refused if an item sold out or was removed in Square since the customer opened the page.
 
 ## For developers
 
 ```
-npm test       # pricing, checkout and sign-up tests (Node 20+, no packages needed)
+npm test       # menu, order, checkout and sign-up tests (Node 20+, no packages needed)
 vercel dev     # run locally; copy .env.example to .env.local first
 ```
 
