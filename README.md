@@ -70,6 +70,7 @@ Square's test card is `4111 1111 1111 1111`, with any future expiry date, any CV
 | `RESEND_API_KEY` | From Resend |
 | `NOTIFY_EMAIL` | Where the shop wants the emails. To send to several people, separate the addresses with commas. |
 | `FROM_EMAIL` | *Optional, after verifying your domain:* `Studio Seven <website@yourdomain>` |
+| `NEWSLETTER_URL` | *Optional:* the sign-up link from Square Marketing. When set, the Newsletter page has a button to Square's sign-up form instead of the website form. |
 | `ORDERS_OPEN` | `true` (set to `false` to pause online ordering) |
 
 3. Redeploy so the variables take effect (**Deployments > ... > Redeploy**).

@@ -229,6 +229,8 @@ $("#wlForm").addEventListener("submit",async e=>{
 });
 function showDone(n){$("#wlDoneH").textContent=`Thanks, ${n}`;$("#wlForm").hidden=true;$("#wlDone").hidden=false}
 const prior=store.get("waitlist",null);if(prior)showDone(prior.name);
+// If the shop uses Square Marketing's own sign-up page (NEWSLETTER_URL in Vercel), send people there instead of the form.
+config().then(c=>{if(/^https:\/\//.test(c.newsletterUrl||"")){$("#wlSquareBtn").href=c.newsletterUrl;$("#wlForm").hidden=true;$("#wlDone").hidden=true;$("#wlSquare").hidden=false}});
 
 $("#openBooking").addEventListener("click",()=>{
   openSheet(head("Book the coffee cart","Tell us a little about it and we'll get back to you within two days with dates and a quote.")+
