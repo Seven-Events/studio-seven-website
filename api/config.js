@@ -7,5 +7,6 @@ module.exports = (req, res) => {
     locationId: process.env.SQUARE_LOCATION_ID || "",
     env: process.env.SQUARE_ENV === "production" ? "production" : "sandbox",
     ordersOpen: process.env.ORDERS_OPEN !== "false",
+    newsletterUrl: process.env.NEWSLETTER_URL || "",
   }));
 };
