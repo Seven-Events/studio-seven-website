@@ -1,11 +1,11 @@
 # Studio Seven website
 
 The Studio Seven flower shop and coffee bar website (downtown Omemee, Ontario).
-Customers order coffee ahead, buy flowers, pre-order flowers for a date, join the opening list, and ask about the mobile coffee cart.
+Customers order coffee ahead, buy flowers, pre-order flowers for a date, sign up for the newsletter, and ask about the mobile coffee cart.
 
 - **The menu comes from Square.** Items, prices, photos, milk and add-on choices, and stock are all managed in your Square Item Library, the same list the counter uses.
 - **Orders and payments go through Square.** Paid orders show up in Square Point of Sale for staff, just like an in-person order.
-- **Opening-list sign-ups and coffee cart requests** are saved as customers in Square, and the shop gets an email for each one through Resend.
+- **Newsletter sign-ups and coffee cart requests** are saved as customers in Square, and the shop gets an email for each one through Resend.
 - **The site is hosted on Vercel.**
 
 ## How it fits together
@@ -31,7 +31,7 @@ Customer's phone ──> Vercel (website in public/ + small functions in api/)
 | `lib/catalog.js` | Reads the Item Library and stock from Square and turns it into the website menu. |
 | `lib/order.js` | Checks every order against the live Square menu. Orders use Square's own items, so Square sets the prices and nobody can change one in their browser. |
 | `lib/checkout.js` | Creates the Square order and charges the customer. |
-| `lib/signup.js` | Saves opening-list and coffee cart requests to Square, and emails the shop. |
+| `lib/signup.js` | Saves newsletter sign-ups and coffee cart requests to Square, and emails the shop. |
 | `test/` | Automated checks. Run `npm test`. |
 
 The code in `lib/` doesn't depend on Vercel, so a future staff admin (for example a Next.js app with a login) can reuse it directly.
@@ -44,7 +44,7 @@ The code in `lib/` doesn't depend on Vercel, so a future staff admin (for exampl
 2. Go to developer.squareup.com, sign in with the same account, and click **Create an application**. Call it "Studio Seven website".
 3. On the app's **Credentials** page, open the **Sandbox** tab. Copy the **Application ID** and the **Access token**.
 4. On the **Locations** page, Sandbox tab, copy the **Location ID**.
-5. *Optional:* in Square Dashboard, go to **Customers > Groups** and create two groups, "Opening list" and "Coffee cart requests". Copy each group's ID from its page address.
+5. *Optional:* in Square Dashboard, go to **Customers > Groups** and create two groups, "Newsletter" and "Coffee cart requests". Copy each group's ID from its page address.
 
 Sandbox is Square's test mode. Payments there are fake, so you can try everything safely.
 Square's test card is `4111 1111 1111 1111`, with any future expiry date, any CVV and any postal code.
@@ -65,7 +65,7 @@ Square's test card is `4111 1111 1111 1111`, with any future expiry date, any CV
 | `SQUARE_APP_ID` | Application ID from Square step 3 |
 | `SQUARE_ACCESS_TOKEN` | Access token from Square step 3 (keep this secret, and never put it in the code) |
 | `SQUARE_LOCATION_ID` | Location ID from Square step 4 |
-| `SQUARE_WAITLIST_GROUP_ID` | *Optional:* "Opening list" group ID |
+| `SQUARE_WAITLIST_GROUP_ID` | *Optional:* "Newsletter" group ID |
 | `SQUARE_CART_GROUP_ID` | *Optional:* "Coffee cart requests" group ID |
 | `RESEND_API_KEY` | From Resend |
 | `NOTIFY_EMAIL` | Where the shop wants the emails. To send to several people, separate the addresses with commas. |
@@ -86,7 +86,7 @@ Square's test card is `4111 1111 1111 1111`, with any future expiry date, any CV
 
 1. Add a few items in Square's Item Library in the website categories (see "Managing the menu in Square"). The website menu is empty until you do.
 2. In sandbox mode, place a coffee order, a flower order, a flower pre-order and a delivery, all with the test card. Check that each one shows up in Square's sandbox dashboard with the right details.
-3. Join the opening list and send a coffee cart request. Check that the shop email arrives and the customer appears in Square's sandbox **Customers**.
+3. Sign up for the newsletter and send a coffee cart request. Check that the shop email arrives and the customer appears in Square's sandbox **Customers**.
 4. When you're ready, repeat Square steps 3 to 5 on the **Production** tab (production has its own customer groups), update the variables (`SQUARE_ENV=production`), and redeploy.
 5. *Optional:* to switch on Apple Pay, register the website's domain under **Apple Pay** in the Square developer dashboard. Google Pay works without this step.
 6. Add your own domain (for example studioseven.ca) under Vercel **Settings > Domains**.
@@ -124,7 +124,7 @@ Items in any other category (for example "Merch" or staff-only items) stay in-st
 
 - **Change the menu, prices, photos or stock:** do it in Square, as above.
 - **Pause online orders** (before opening day, or on a slammed morning): set `ORDERS_OPEN` to `false` in Vercel and redeploy. The menu stays visible, but checkout explains that ordering is paused.
-- **See the opening list:** in Square Dashboard, open **Customers**, filter by the "Opening list" group, and export it when you're ready to email everyone.
+- **Email the newsletter:** in Square Dashboard, open **Customers** and filter by the "Newsletter" group. Send from **Square Marketing**, or export the list to your email tool. Each sign-up's interests are in the customer note.
 
 ## How orders work
 

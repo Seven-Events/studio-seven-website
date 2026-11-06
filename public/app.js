@@ -193,7 +193,7 @@ function openCart(){
     if(payMethods.length){pay(payMethods[0]);return}
     if(!details())return;
     const cfg=await config();
-    if(!cfg.appId||!cfg.locationId||cfg.ordersOpen===false){err("Online ordering isn't open yet. Join the opening list and we'll let you know.");return}
+    if(!cfg.appId||!cfg.locationId||cfg.ordersOpen===false){err("Online ordering isn't open yet. Sign up for our newsletter and we'll let you know.");return}
     $("#payBtn").disabled=true;$("#payBtn").textContent="Loading secure payment…";
     try{
       await loadSquare(cfg.env);
@@ -225,9 +225,9 @@ $("#wlForm").addEventListener("submit",async e=>{
   try{
     await sendForm("waitlist",{name:nm,email:em,phone:$("#wlPhone").value.trim(),interests:$$("#wlForm .opt input:checked").map(c=>c.value).join(", "),town:$("#wlTown").value});
     store.set("waitlist",{name:nm});showDone(nm);window.scrollTo(0,0);
-  }catch(err){btn.disabled=false;btn.textContent="Put me on the list";toast("That didn't go through. Please try again.")}
+  }catch(err){btn.disabled=false;btn.textContent="Sign me up";toast("That didn't go through. Please try again.")}
 });
-function showDone(n){$("#wlDoneH").textContent=`See you soon, ${n}`;$("#wlForm").hidden=true;$("#wlDone").hidden=false}
+function showDone(n){$("#wlDoneH").textContent=`Thanks, ${n}`;$("#wlForm").hidden=true;$("#wlDone").hidden=false}
 const prior=store.get("waitlist",null);if(prior)showDone(prior.name);
 
 $("#openBooking").addEventListener("click",()=>{
