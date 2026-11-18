@@ -32,7 +32,7 @@ function describe(l){
 const save=()=>{store.set("cart3",cart);$("#cartN").textContent=cart.reduce((a,l)=>a+l.q,0)};
 
 /* ---------- ROUTING ---------- */
-const VIEWS=["home","coffee","flowers","waitlist"];
+const VIEWS=["home","coffee","flowers"];
 function route(){
   const raw=(location.hash||"#home").slice(1), h=VIEWS.includes(raw)?raw:"home";
   $$("[data-view]").forEach(v=>v.hidden=v.dataset.view!==h);
@@ -193,7 +193,7 @@ function openCart(){
     if(payMethods.length){pay(payMethods[0]);return}
     if(!details())return;
     const cfg=await config();
-    if(!cfg.appId||!cfg.locationId||cfg.ordersOpen===false){err("Online ordering isn't open yet. Sign up for our newsletter and we'll let you know.");return}
+    if(!cfg.appId||!cfg.locationId||cfg.ordersOpen===false){err("Online ordering isn't open yet. Check back soon.");return}
     $("#payBtn").disabled=true;$("#payBtn").textContent="Loading secure payment…";
     try{
       await loadSquare(cfg.env);
@@ -215,22 +215,6 @@ async function sendForm(type,fields){
   const res=await fetch("/api/signup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({type,...fields,company:""})});
   if(!res.ok)throw new Error("send");
 }
-$("#wlForm").addEventListener("submit",async e=>{
-  e.preventDefault();
-  const nm=$("#wlName").value.trim(),em=$("#wlEmail").value.trim(),ok=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em);
-  $("#wlEmailErr").hidden=ok||!em;
-  if(!nm){$("#wlName").focus();return}
-  if(!ok){$("#wlEmailErr").hidden=false;$("#wlEmail").focus();return}
-  const btn=$("#wlForm button[type=submit]");btn.disabled=true;btn.textContent="Adding you…";
-  try{
-    await sendForm("waitlist",{name:nm,email:em,phone:$("#wlPhone").value.trim(),interests:$$("#wlForm .opt input:checked").map(c=>c.value).join(", "),town:$("#wlTown").value});
-    store.set("waitlist",{name:nm});showDone(nm);window.scrollTo(0,0);
-  }catch(err){btn.disabled=false;btn.textContent="Sign me up";toast("That didn't go through. Please try again.")}
-});
-function showDone(n){$("#wlDoneH").textContent=`Thanks, ${n}`;$("#wlForm").hidden=true;$("#wlDone").hidden=false}
-const prior=store.get("waitlist",null);if(prior)showDone(prior.name);
-// If the shop uses Square Marketing's own sign-up page (NEWSLETTER_URL in Vercel), send people there instead of the form.
-config().then(c=>{if(/^https:\/\//.test(c.newsletterUrl||"")){$("#wlSquareBtn").href=c.newsletterUrl;$("#wlForm").hidden=true;$("#wlDone").hidden=true;$("#wlSquare").hidden=false}});
 
 $("#openBooking").addEventListener("click",()=>{
   openSheet(head("Book the coffee cart","Tell us a little about it and we'll get back to you within two days with dates and a quote.")+
