@@ -2,9 +2,12 @@ const test = require("node:test");
 const assert = require("node:assert");
 const { checkout } = require("../lib/checkout");
 const { SquareError } = require("../lib/square");
+const { buildMenu } = require("../lib/catalog");
+const fx = require("./fixtures/square-catalog.json");
+const loadMenu = async () => buildMenu(fx.objects, fx.counts, "L1");
 
 process.env.SQUARE_ACCESS_TOKEN = "test"; process.env.SQUARE_LOCATION_ID = "L1";
-const input = (extra = {}) => ({ cart: [{ kind: "coffee", id: "latte", q: 1 }], customer: { name: "Sam", phone: "7055550142" }, fulfillment: { coffeeTime: "asap" }, sourceId: "cnon:card-nonce-ok", idempotencyKey: "0f8fad5b-d9cb-469f-a165-70867728950e", ...extra });
+const input = (extra = {}) => ({ cart: [{ id: "I_latte", v: "V_latte_1", mods: ["ML_MILK_0"], q: 1 }], customer: { name: "Sam", phone: "7055550142" }, fulfillment: { coffeeTime: "asap" }, sourceId: "cnon:card-nonce-ok", idempotencyKey: "0f8fad5b-d9cb-469f-a165-70867728950e", ...extra });
 
 test("creates the order, then charges exactly Square's total", async () => {
   const calls = [];
@@ -13,10 +16,11 @@ test("creates the order, then charges exactly Square's total", async () => {
     if (path === "/v2/orders") return { order: { id: "ORD1", total_money: { amount: 593, currency: "CAD" }, fulfillments: [{ type: "PICKUP" }] } };
     return { payment: { id: "PAY1", receipt_url: "https://squareup.com/receipt/x" } };
   };
-  const res = await checkout(input({ total: 1 }), { square: fake });
+  const res = await checkout(input({ total: 1 }), { square: fake, loadMenu });
   assert.equal(res.status, 200);
   assert.equal(calls[1][1].amount_money.amount, 593);
   assert.equal(calls[1][1].order_id, "ORD1");
+  assert.equal(calls[0][1].order.line_items[0].catalog_object_id, "V_latte_1");
   assert.equal(res.body.orderId, "ORD1");
 });
 
@@ -25,14 +29,14 @@ test("a declined card gets a plain-English message", async () => {
     if (path === "/v2/orders") return { order: { id: "ORD1", total_money: { amount: 593, currency: "CAD" } } };
     throw new SquareError([{ code: "CARD_DECLINED", detail: "declined" }], 402);
   };
-  const res = await checkout(input(), { square: fake });
+  const res = await checkout(input(), { square: fake, loadMenu });
   assert.equal(res.status, 402);
   assert.match(res.body.error, /declined/);
 });
 
 test("bad carts are refused before anything reaches Square", async () => {
   let called = false;
-  const res = await checkout(input({ cart: [{ kind: "coffee", id: "free-coffee", q: 1 }] }), { square: async () => { called = true; } });
+  const res = await checkout(input({ cart: [{ id: "free-coffee", q: 1 }] }), { square: async () => { called = true; }, loadMenu });
   assert.equal(res.status, 400);
   assert.equal(called, false);
 });

@@ -1,0 +1,1475 @@
+{
+ "objects": [
+  {
+   "type": "MODIFIER_LIST",
+   "id": "ML_MILK",
+   "present_at_all_locations": true,
+   "modifier_list_data": {
+    "name": "Milk",
+    "selection_type": "SINGLE",
+    "modifiers": [
+     {
+      "type": "MODIFIER",
+      "id": "ML_MILK_0",
+      "present_at_all_locations": true,
+      "modifier_data": {
+       "name": "Whole",
+       "price_money": {
+        "amount": 0,
+        "currency": "CAD"
+       },
+       "ordinal": 0,
+       "on_by_default": true
+      }
+     },
+     {
+      "type": "MODIFIER",
+      "id": "ML_MILK_1",
+      "present_at_all_locations": true,
+      "modifier_data": {
+       "name": "2%",
+       "price_money": {
+        "amount": 0,
+        "currency": "CAD"
+       },
+       "ordinal": 1,
+       "on_by_default": false
+      }
+     },
+     {
+      "type": "MODIFIER",
+      "id": "ML_MILK_2",
+      "present_at_all_locations": true,
+      "modifier_data": {
+       "name": "Oat",
+       "price_money": {
+        "amount": 75,
+        "currency": "CAD"
+       },
+       "ordinal": 2,
+       "on_by_default": false
+      }
+     },
+     {
+      "type": "MODIFIER",
+      "id": "ML_MILK_3",
+      "present_at_all_locations": true,
+      "modifier_data": {
+       "name": "Almond",
+       "price_money": {
+        "amount": 75,
+        "currency": "CAD"
+       },
+       "ordinal": 3,
+       "on_by_default": false
+      }
+     },
+     {
+      "type": "MODIFIER",
+      "id": "ML_MILK_4",
+      "present_at_all_locations": true,
+      "modifier_data": {
+       "name": "No milk",
+       "price_money": {
+        "amount": 0,
+        "currency": "CAD"
+       },
+       "ordinal": 4,
+       "on_by_default": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "type": "MODIFIER_LIST",
+   "id": "ML_ADDS",
+   "present_at_all_locations": true,
+   "modifier_list_data": {
+    "name": "Add-ons",
+    "selection_type": "MULTIPLE",
+    "modifiers": [
+     {
+      "type": "MODIFIER",
+      "id": "ML_ADDS_0",
+      "present_at_all_locations": true,
+      "modifier_data": {
+       "name": "Extra shot",
+       "price_money": {
+        "amount": 100,
+        "currency": "CAD"
+       },
+       "ordinal": 0,
+       "on_by_default": false
+      }
+     },
+     {
+      "type": "MODIFIER",
+      "id": "ML_ADDS_1",
+      "present_at_all_locations": true,
+      "modifier_data": {
+       "name": "Vanilla",
+       "price_money": {
+        "amount": 60,
+        "currency": "CAD"
+       },
+       "ordinal": 1,
+       "on_by_default": false
+      }
+     },
+     {
+      "type": "MODIFIER",
+      "id": "ML_ADDS_2",
+      "present_at_all_locations": true,
+      "modifier_data": {
+       "name": "Lavender honey",
+       "price_money": {
+        "amount": 75,
+        "currency": "CAD"
+       },
+       "ordinal": 2,
+       "on_by_default": false
+      }
+     },
+     {
+      "type": "MODIFIER",
+      "id": "ML_ADDS_3",
+      "present_at_all_locations": true,
+      "modifier_data": {
+       "name": "Rose cardamom",
+       "price_money": {
+        "amount": 75,
+        "currency": "CAD"
+       },
+       "ordinal": 3,
+       "on_by_default": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "type": "CATEGORY",
+   "id": "CAT_ESPRESSO",
+   "present_at_all_locations": true,
+   "category_data": {
+    "name": "Espresso"
+   }
+  },
+  {
+   "type": "ITEM",
+   "id": "I_esp",
+   "present_at_all_locations": true,
+   "item_data": {
+    "name": "Espresso",
+    "description_plaintext": "A double shot of the house blend.",
+    "categories": [
+     {
+      "id": "CAT_ESPRESSO",
+      "ordinal": 0
+     }
+    ],
+    "variations": [
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_esp_0",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_esp",
+       "name": "Regular",
+       "ordinal": 0,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 325,
+        "currency": "CAD"
+       }
+      }
+     }
+    ],
+    "modifier_list_info": [
+     {
+      "modifier_list_id": "ML_ADDS",
+      "enabled": true
+     }
+    ]
+   }
+  },
+  {
+   "type": "ITEM",
+   "id": "I_amer",
+   "present_at_all_locations": true,
+   "item_data": {
+    "name": "Americano",
+    "description_plaintext": "Espresso and hot water.",
+    "categories": [
+     {
+      "id": "CAT_ESPRESSO",
+      "ordinal": 1
+     }
+    ],
+    "variations": [
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_amer_0",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_amer",
+       "name": "8 oz",
+       "ordinal": 0,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 375,
+        "currency": "CAD"
+       }
+      }
+     },
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_amer_1",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_amer",
+       "name": "12 oz",
+       "ordinal": 1,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 435,
+        "currency": "CAD"
+       }
+      }
+     },
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_amer_2",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_amer",
+       "name": "16 oz",
+       "ordinal": 2,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 485,
+        "currency": "CAD"
+       }
+      }
+     }
+    ],
+    "modifier_list_info": [
+     {
+      "modifier_list_id": "ML_ADDS",
+      "enabled": true
+     }
+    ]
+   }
+  },
+  {
+   "type": "ITEM",
+   "id": "I_cort",
+   "present_at_all_locations": true,
+   "item_data": {
+    "name": "Cortado",
+    "description_plaintext": "Half espresso, half steamed milk.",
+    "categories": [
+     {
+      "id": "CAT_ESPRESSO",
+      "ordinal": 2
+     }
+    ],
+    "variations": [
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_cort_0",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_cort",
+       "name": "Regular",
+       "ordinal": 0,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 450,
+        "currency": "CAD"
+       }
+      }
+     }
+    ],
+    "modifier_list_info": [
+     {
+      "modifier_list_id": "ML_MILK",
+      "min_selected_modifiers": 1,
+      "max_selected_modifiers": 1,
+      "enabled": true
+     },
+     {
+      "modifier_list_id": "ML_ADDS",
+      "enabled": true
+     }
+    ]
+   }
+  },
+  {
+   "type": "ITEM",
+   "id": "I_latte",
+   "present_at_all_locations": true,
+   "item_data": {
+    "name": "Latte",
+    "description_plaintext": "Double shot, lots of silky milk.",
+    "categories": [
+     {
+      "id": "CAT_ESPRESSO",
+      "ordinal": 3
+     }
+    ],
+    "variations": [
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_latte_0",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_latte",
+       "name": "8 oz",
+       "ordinal": 0,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 525,
+        "currency": "CAD"
+       }
+      }
+     },
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_latte_1",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_latte",
+       "name": "12 oz",
+       "ordinal": 1,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 585,
+        "currency": "CAD"
+       }
+      }
+     },
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_latte_2",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_latte",
+       "name": "16 oz",
+       "ordinal": 2,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 635,
+        "currency": "CAD"
+       }
+      }
+     }
+    ],
+    "modifier_list_info": [
+     {
+      "modifier_list_id": "ML_MILK",
+      "min_selected_modifiers": 1,
+      "max_selected_modifiers": 1,
+      "enabled": true
+     },
+     {
+      "modifier_list_id": "ML_ADDS",
+      "enabled": true
+     }
+    ]
+   }
+  },
+  {
+   "type": "ITEM",
+   "id": "I_capp",
+   "present_at_all_locations": true,
+   "item_data": {
+    "name": "Cappuccino",
+    "description_plaintext": "More foam, less milk.",
+    "categories": [
+     {
+      "id": "CAT_ESPRESSO",
+      "ordinal": 4
+     }
+    ],
+    "variations": [
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_capp_0",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_capp",
+       "name": "8 oz",
+       "ordinal": 0,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 500,
+        "currency": "CAD"
+       }
+      }
+     },
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_capp_1",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_capp",
+       "name": "12 oz",
+       "ordinal": 1,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 560,
+        "currency": "CAD"
+       }
+      }
+     },
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_capp_2",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_capp",
+       "name": "16 oz",
+       "ordinal": 2,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 610,
+        "currency": "CAD"
+       }
+      }
+     }
+    ],
+    "modifier_list_info": [
+     {
+      "modifier_list_id": "ML_MILK",
+      "min_selected_modifiers": 1,
+      "max_selected_modifiers": 1,
+      "enabled": true
+     },
+     {
+      "modifier_list_id": "ML_ADDS",
+      "enabled": true
+     }
+    ]
+   }
+  },
+  {
+   "type": "ITEM",
+   "id": "I_mocha",
+   "present_at_all_locations": true,
+   "item_data": {
+    "name": "Mocha",
+    "description_plaintext": "With dark chocolate.",
+    "categories": [
+     {
+      "id": "CAT_ESPRESSO",
+      "ordinal": 5
+     }
+    ],
+    "variations": [
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_mocha_0",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_mocha",
+       "name": "8 oz",
+       "ordinal": 0,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 575,
+        "currency": "CAD"
+       }
+      }
+     },
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_mocha_1",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_mocha",
+       "name": "12 oz",
+       "ordinal": 1,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 635,
+        "currency": "CAD"
+       }
+      }
+     },
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_mocha_2",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_mocha",
+       "name": "16 oz",
+       "ordinal": 2,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 685,
+        "currency": "CAD"
+       }
+      }
+     }
+    ],
+    "modifier_list_info": [
+     {
+      "modifier_list_id": "ML_MILK",
+      "min_selected_modifiers": 1,
+      "max_selected_modifiers": 1,
+      "enabled": true
+     },
+     {
+      "modifier_list_id": "ML_ADDS",
+      "enabled": true
+     }
+    ]
+   }
+  },
+  {
+   "type": "CATEGORY",
+   "id": "CAT_HOUSE_DRINKS",
+   "present_at_all_locations": true,
+   "category_data": {
+    "name": "House drinks"
+   }
+  },
+  {
+   "type": "ITEM",
+   "id": "I_lav",
+   "present_at_all_locations": true,
+   "item_data": {
+    "name": "Lavender Honey Latte",
+    "description_plaintext": "Ontario honey and lavender we steep ourselves.",
+    "categories": [
+     {
+      "id": "CAT_HOUSE_DRINKS",
+      "ordinal": 0
+     }
+    ],
+    "variations": [
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_lav_0",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_lav",
+       "name": "8 oz",
+       "ordinal": 0,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 625,
+        "currency": "CAD"
+       }
+      }
+     },
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_lav_1",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_lav",
+       "name": "12 oz",
+       "ordinal": 1,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 685,
+        "currency": "CAD"
+       }
+      }
+     },
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_lav_2",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_lav",
+       "name": "16 oz",
+       "ordinal": 2,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 735,
+        "currency": "CAD"
+       }
+      }
+     }
+    ],
+    "modifier_list_info": [
+     {
+      "modifier_list_id": "ML_MILK",
+      "min_selected_modifiers": 1,
+      "max_selected_modifiers": 1,
+      "enabled": true
+     },
+     {
+      "modifier_list_id": "ML_ADDS",
+      "enabled": true
+     }
+    ]
+   }
+  },
+  {
+   "type": "ITEM",
+   "id": "I_rose",
+   "present_at_all_locations": true,
+   "item_data": {
+    "name": "Rose Cardamom Latte",
+    "description_plaintext": "Our flower-shop drink. Floral, a little spicy.",
+    "categories": [
+     {
+      "id": "CAT_HOUSE_DRINKS",
+      "ordinal": 1
+     }
+    ],
+    "variations": [
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_rose_0",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_rose",
+       "name": "8 oz",
+       "ordinal": 0,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 625,
+        "currency": "CAD"
+       }
+      }
+     },
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_rose_1",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_rose",
+       "name": "12 oz",
+       "ordinal": 1,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 685,
+        "currency": "CAD"
+       }
+      }
+     },
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_rose_2",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_rose",
+       "name": "16 oz",
+       "ordinal": 2,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 735,
+        "currency": "CAD"
+       }
+      }
+     }
+    ],
+    "modifier_list_info": [
+     {
+      "modifier_list_id": "ML_MILK",
+      "min_selected_modifiers": 1,
+      "max_selected_modifiers": 1,
+      "enabled": true
+     },
+     {
+      "modifier_list_id": "ML_ADDS",
+      "enabled": true
+     }
+    ]
+   }
+  },
+  {
+   "type": "ITEM",
+   "id": "I_maple",
+   "present_at_all_locations": true,
+   "item_data": {
+    "name": "Maple Oat Cortado",
+    "description_plaintext": "Kawartha maple and oat milk.",
+    "categories": [
+     {
+      "id": "CAT_HOUSE_DRINKS",
+      "ordinal": 2
+     }
+    ],
+    "variations": [
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_maple_0",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_maple",
+       "name": "Regular",
+       "ordinal": 0,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 550,
+        "currency": "CAD"
+       }
+      }
+     }
+    ],
+    "modifier_list_info": [
+     {
+      "modifier_list_id": "ML_MILK",
+      "min_selected_modifiers": 1,
+      "max_selected_modifiers": 1,
+      "enabled": true
+     },
+     {
+      "modifier_list_id": "ML_ADDS",
+      "enabled": true
+     }
+    ]
+   }
+  },
+  {
+   "type": "CATEGORY",
+   "id": "CAT_NO_COFFEE",
+   "present_at_all_locations": true,
+   "category_data": {
+    "name": "No coffee"
+   }
+  },
+  {
+   "type": "ITEM",
+   "id": "I_matcha",
+   "present_at_all_locations": true,
+   "item_data": {
+    "name": "Matcha Latte",
+    "description_plaintext": "Lightly sweetened.",
+    "categories": [
+     {
+      "id": "CAT_NO_COFFEE",
+      "ordinal": 0
+     }
+    ],
+    "variations": [
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_matcha_0",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_matcha",
+       "name": "8 oz",
+       "ordinal": 0,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 575,
+        "currency": "CAD"
+       }
+      }
+     },
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_matcha_1",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_matcha",
+       "name": "12 oz",
+       "ordinal": 1,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 635,
+        "currency": "CAD"
+       }
+      }
+     },
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_matcha_2",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_matcha",
+       "name": "16 oz",
+       "ordinal": 2,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 685,
+        "currency": "CAD"
+       }
+      }
+     }
+    ],
+    "modifier_list_info": [
+     {
+      "modifier_list_id": "ML_MILK",
+      "min_selected_modifiers": 1,
+      "max_selected_modifiers": 1,
+      "enabled": true
+     },
+     {
+      "modifier_list_id": "ML_ADDS",
+      "enabled": true
+     }
+    ]
+   }
+  },
+  {
+   "type": "ITEM",
+   "id": "I_chai",
+   "present_at_all_locations": true,
+   "item_data": {
+    "name": "Chai Latte",
+    "description_plaintext": "Spiced black tea and milk.",
+    "categories": [
+     {
+      "id": "CAT_NO_COFFEE",
+      "ordinal": 1
+     }
+    ],
+    "variations": [
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_chai_0",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_chai",
+       "name": "8 oz",
+       "ordinal": 0,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 525,
+        "currency": "CAD"
+       }
+      }
+     },
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_chai_1",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_chai",
+       "name": "12 oz",
+       "ordinal": 1,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 585,
+        "currency": "CAD"
+       }
+      }
+     },
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_chai_2",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_chai",
+       "name": "16 oz",
+       "ordinal": 2,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 635,
+        "currency": "CAD"
+       }
+      }
+     }
+    ],
+    "modifier_list_info": [
+     {
+      "modifier_list_id": "ML_MILK",
+      "min_selected_modifiers": 1,
+      "max_selected_modifiers": 1,
+      "enabled": true
+     },
+     {
+      "modifier_list_id": "ML_ADDS",
+      "enabled": true
+     }
+    ]
+   }
+  },
+  {
+   "type": "ITEM",
+   "id": "I_choc",
+   "present_at_all_locations": true,
+   "item_data": {
+    "name": "Hot Chocolate",
+    "description_plaintext": "Dark chocolate, whipped cream on top.",
+    "categories": [
+     {
+      "id": "CAT_NO_COFFEE",
+      "ordinal": 2
+     }
+    ],
+    "variations": [
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_choc_0",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_choc",
+       "name": "8 oz",
+       "ordinal": 0,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 450,
+        "currency": "CAD"
+       }
+      }
+     },
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_choc_1",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_choc",
+       "name": "12 oz",
+       "ordinal": 1,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 510,
+        "currency": "CAD"
+       }
+      }
+     },
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_choc_2",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_choc",
+       "name": "16 oz",
+       "ordinal": 2,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 560,
+        "currency": "CAD"
+       }
+      }
+     }
+    ],
+    "modifier_list_info": [
+     {
+      "modifier_list_id": "ML_MILK",
+      "min_selected_modifiers": 1,
+      "max_selected_modifiers": 1,
+      "enabled": true
+     },
+     {
+      "modifier_list_id": "ML_ADDS",
+      "enabled": true
+     }
+    ]
+   }
+  },
+  {
+   "type": "ITEM",
+   "id": "I_tea",
+   "present_at_all_locations": true,
+   "item_data": {
+    "name": "Loose Leaf Tea",
+    "description_plaintext": "Ask what's on today.",
+    "categories": [
+     {
+      "id": "CAT_NO_COFFEE",
+      "ordinal": 3
+     }
+    ],
+    "variations": [
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_tea_0",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_tea",
+       "name": "8 oz",
+       "ordinal": 0,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 350,
+        "currency": "CAD"
+       }
+      }
+     },
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_tea_1",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_tea",
+       "name": "12 oz",
+       "ordinal": 1,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 410,
+        "currency": "CAD"
+       }
+      }
+     },
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_tea_2",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_tea",
+       "name": "16 oz",
+       "ordinal": 2,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 460,
+        "currency": "CAD"
+       }
+      }
+     }
+    ],
+    "modifier_list_info": [
+     {
+      "modifier_list_id": "ML_ADDS",
+      "enabled": true
+     }
+    ]
+   }
+  },
+  {
+   "type": "CATEGORY",
+   "id": "CAT_BAKING",
+   "present_at_all_locations": true,
+   "category_data": {
+    "name": "Baking"
+   }
+  },
+  {
+   "type": "ITEM",
+   "id": "I_crois",
+   "present_at_all_locations": true,
+   "item_data": {
+    "name": "Butter Croissant",
+    "description_plaintext": "Out of the oven every morning.",
+    "categories": [
+     {
+      "id": "CAT_BAKING",
+      "ordinal": 0
+     }
+    ],
+    "variations": [
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_crois_0",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_crois",
+       "name": "Regular",
+       "ordinal": 0,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 400,
+        "currency": "CAD"
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "type": "ITEM",
+   "id": "I_scone",
+   "present_at_all_locations": true,
+   "item_data": {
+    "name": "Scone of the Week",
+    "description_plaintext": "Changes every Monday.",
+    "categories": [
+     {
+      "id": "CAT_BAKING",
+      "ordinal": 1
+     }
+    ],
+    "variations": [
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_scone_0",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_scone",
+       "name": "Regular",
+       "ordinal": 0,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 425,
+        "currency": "CAD"
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "type": "ITEM",
+   "id": "I_cookie",
+   "present_at_all_locations": true,
+   "item_data": {
+    "name": "Brown Butter Cookie",
+    "description_plaintext": "With flaky salt.",
+    "categories": [
+     {
+      "id": "CAT_BAKING",
+      "ordinal": 2
+     }
+    ],
+    "variations": [
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_cookie_0",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_cookie",
+       "name": "Regular",
+       "ordinal": 0,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 325,
+        "currency": "CAD"
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "type": "CATEGORY",
+   "id": "CAT_FLOWERS",
+   "present_at_all_locations": true,
+   "category_data": {
+    "name": "Flowers"
+   }
+  },
+  {
+   "type": "ITEM",
+   "id": "I_market",
+   "present_at_all_locations": true,
+   "item_data": {
+    "name": "Market Bunch",
+    "description_plaintext": "Hand-tied, wrapped in paper, whatever looks best that week.",
+    "categories": [
+     {
+      "id": "CAT_FLOWERS",
+      "ordinal": 0
+     }
+    ],
+    "image_ids": [
+     "IMG_market"
+    ],
+    "variations": [
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_market_0",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_market",
+       "name": "Standard",
+       "ordinal": 0,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 2800,
+        "currency": "CAD"
+       },
+       "track_inventory": false
+      }
+     },
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_market_1",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_market",
+       "name": "Generous",
+       "ordinal": 1,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 4200,
+        "currency": "CAD"
+       },
+       "track_inventory": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "type": "ITEM",
+   "id": "I_arr",
+   "present_at_all_locations": true,
+   "item_data": {
+    "name": "Arrangement in a Vase",
+    "description_plaintext": "Loose and gardeny, in a vase you keep.",
+    "categories": [
+     {
+      "id": "CAT_FLOWERS",
+      "ordinal": 1
+     }
+    ],
+    "variations": [
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_arr_0",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_arr",
+       "name": "Petite",
+       "ordinal": 0,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 6500,
+        "currency": "CAD"
+       },
+       "track_inventory": false
+      }
+     },
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_arr_1",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_arr",
+       "name": "Classic",
+       "ordinal": 1,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 9000,
+        "currency": "CAD"
+       },
+       "track_inventory": false
+      }
+     },
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_arr_2",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_arr",
+       "name": "Lush",
+       "ordinal": 2,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 12500,
+        "currency": "CAD"
+       },
+       "track_inventory": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "type": "ITEM",
+   "id": "I_bud",
+   "present_at_all_locations": true,
+   "item_data": {
+    "name": "Bud Vase Trio",
+    "description_plaintext": "Three little vases for a table or windowsill.",
+    "categories": [
+     {
+      "id": "CAT_FLOWERS",
+      "ordinal": 2
+     }
+    ],
+    "variations": [
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_bud_0",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_bud",
+       "name": "Trio",
+       "ordinal": 0,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 3600,
+        "currency": "CAD"
+       },
+       "track_inventory": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "type": "ITEM",
+   "id": "I_pair",
+   "present_at_all_locations": true,
+   "item_data": {
+    "name": "Flowers & Coffee",
+    "description_plaintext": "A market bunch and a card good for two drinks. Our favourite thank-you.",
+    "categories": [
+     {
+      "id": "CAT_FLOWERS",
+      "ordinal": 3
+     }
+    ],
+    "variations": [
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_pair_0",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_pair",
+       "name": "One",
+       "ordinal": 0,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 4800,
+        "currency": "CAD"
+       },
+       "track_inventory": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "type": "ITEM",
+   "id": "I_sub",
+   "present_at_all_locations": true,
+   "item_data": {
+    "name": "Flower Subscription",
+    "description_plaintext": "A fresh bunch every Friday for four weeks.",
+    "categories": [
+     {
+      "id": "CAT_FLOWERS",
+      "ordinal": 4
+     }
+    ],
+    "variations": [
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_sub_0",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_sub",
+       "name": "4 weeks",
+       "ordinal": 0,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 12000,
+        "currency": "CAD"
+       },
+       "track_inventory": false
+      }
+     },
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_sub_1",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_sub",
+       "name": "8 weeks",
+       "ordinal": 1,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 23000,
+        "currency": "CAD"
+       },
+       "track_inventory": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "type": "ITEM",
+   "id": "I_dried",
+   "present_at_all_locations": true,
+   "item_data": {
+    "name": "Dried Wreath",
+    "description_plaintext": "Dried florals on grapevine. Lasts all season.",
+    "categories": [
+     {
+      "id": "CAT_FLOWERS",
+      "ordinal": 5
+     }
+    ],
+    "variations": [
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_dried_0",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_dried",
+       "name": "14 in",
+       "ordinal": 0,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 5500,
+        "currency": "CAD"
+       },
+       "track_inventory": true
+      }
+     },
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_dried_1",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "item_id": "I_dried",
+       "name": "20 in",
+       "ordinal": 1,
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 8500,
+        "currency": "CAD"
+       },
+       "track_inventory": true
+      }
+     }
+    ]
+   }
+  },
+  {
+   "type": "IMAGE",
+   "id": "IMG_market",
+   "image_data": {
+    "url": "/img/sprig.webp",
+    "name": "Market Bunch"
+   }
+  },
+  {
+   "type": "CATEGORY",
+   "id": "CAT_MERCH",
+   "present_at_all_locations": true,
+   "category_data": {
+    "name": "Merch"
+   }
+  },
+  {
+   "type": "ITEM",
+   "id": "I_mug",
+   "present_at_all_locations": true,
+   "item_data": {
+    "name": "Mug",
+    "categories": [
+     {
+      "id": "CAT_MERCH"
+     }
+    ],
+    "variations": [
+     {
+      "type": "ITEM_VARIATION",
+      "id": "V_mug",
+      "present_at_all_locations": true,
+      "item_variation_data": {
+       "name": "Regular",
+       "pricing_type": "FIXED_PRICING",
+       "price_money": {
+        "amount": 2000,
+        "currency": "CAD"
+       }
+      }
+     }
+    ]
+   }
+  }
+ ],
+ "counts": [
+  {
+   "catalog_object_id": "V_dried_0",
+   "quantity": "3",
+   "state": "IN_STOCK",
+   "location_id": "L1"
+  }
+ ]
+}

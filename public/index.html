@@ -107,6 +107,13 @@ main{padding-bottom:calc(var(--navh) + 20px + env(safe-area-inset-bottom,0px));o
 .tile:nth-child(4n+4) .pic{background:var(--tileC)}
 .tile:nth-child(even) .pic img{transform:scaleX(-1)}
 .tile .flag{position:absolute;left:10px;top:10px;background:var(--forest);color:var(--ivory);font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 9px;border-radius:999px}
+.tile .pic img.photo{width:100%;height:100%;object-fit:cover;transform:none}
+.tile .flag.out{background:var(--pop)}
+.sheet-pic{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:16px;margin-bottom:14px}
+.dish.out .nm,.dish.out .ds{opacity:.55}
+.dish.out .pr{color:var(--pop);font-size:.85rem}
+.choice button:disabled{opacity:.45;text-decoration:line-through;cursor:not-allowed}
+.btn:disabled{opacity:.55;cursor:not-allowed}
 .tile b{font-family:var(--display);font-weight:400;font-size:1.35rem;line-height:1.05;color:var(--forest)}
 .tile span.pr{font-size:.9rem;color:var(--muted);font-variant-numeric:tabular-nums}
 
@@ -174,6 +181,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--forest);outline:none}
 .choice{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;background:var(--ivory-2);border-radius:12px;padding:4px}
 .choice button{border:0;background:transparent;border-radius:8px;min-height:44px;cursor:pointer;color:var(--forest);font-weight:600;font-size:.86rem;padding:2px 6px;line-height:1.2}
 .choice button[aria-pressed="true"]{background:var(--forest);color:var(--ivory)}
+.choice.many{grid-auto-flow:row;grid-template-columns:repeat(3,1fr)}
 .choice small{display:block;font-weight:500;font-size:.74rem;opacity:.85}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .row2>*{min-width:0}
@@ -285,7 +293,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--forest);outline:none}
 <header class="top">
   <div class="wrap">
     <a class="mark" href="#home" aria-label="Studio Seven home"><img src="/img/logo.webp" alt=""></a>
-    <nav class="topnav" aria-label="Main"><a href="#home" data-tab="home">Home</a><a href="#coffee" data-tab="coffee">Coffee</a><a href="#flowers" data-tab="flowers">Flowers</a><a href="#cart-booking">Coffee cart</a><a href="#waitlist" data-tab="waitlist">The list</a></nav>
+    <nav class="topnav" aria-label="Main"><a href="#home" data-tab="home">Home</a><a href="#coffee" data-tab="coffee">Coffee</a><a href="#flowers" data-tab="flowers">Flowers</a><a href="#cart-booking">Coffee cart</a><a href="#waitlist" data-tab="waitlist">Newsletter</a></nav>
     <button class="bag" id="cartBtn" type="button">Your order <span class="n" id="cartN">0</span></button>
   </div>
 </header>
@@ -299,7 +307,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--forest);outline:none}
         <span class="kicker">Opening soon · Downtown Omemee</span>
         <div class="headline"><h1>Fresh flowers <em class="it">&amp;</em> good coffee</h1><a class="shopall" href="#flowers">Shop flowers</a></div>
         <p>A little flower shop and coffee bar on the main street. Grab a latte, leave with an armful of whatever's blooming.</p>
-        <div class="btns"><a class="btn" href="#waitlist">Join the opening list</a><a class="btn out" href="#coffee">Order coffee</a></div>
+        <div class="btns"><a class="btn" href="#waitlist">Get our newsletter</a><a class="btn out" href="#coffee">Order coffee</a></div>
         </div>
         <div class="collage">
           <a class="cl c1" href="#flowers"><img src="/img/sprigf.webp" alt=""><span>Market bunches</span></a>
@@ -342,8 +350,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--forest);outline:none}
 
     <section class="band blushb">
       <div class="wrap">
-        <div class="sh"><span class="kicker">The opening list</span><h2>Be first through the door</h2><p>Hear our opening date before anyone else, get a drink on us opening week, and first pick of pre-order flowers.</p></div>
-        <a class="btn" href="#waitlist" style="align-self:flex-start">Join the list</a>
+        <div class="sh"><span class="kicker">The newsletter</span><h2>Stay in the loop</h2><p>Our opening date, new drinks, seasonal flowers, pre-order reminders for the big days, and where the coffee cart is popping up next.</p></div>
+        <a class="btn" href="#waitlist" style="align-self:flex-start">Sign up</a>
       </div>
     </section>
 
@@ -351,7 +359,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--forest);outline:none}
       <div class="wrap">
         <dl class="notes">
           <div><dt>Find us</dt><dd>Downtown Omemee, Ontario</dd></div>
-          <div><dt>Opening day</dt><dd>Announced to the list first</dd></div>
+          <div><dt>Opening day</dt><dd>Announced in the newsletter first</dd></div>
           <div><dt>Coffee pickup</dt><dd>At the bar, under your name</dd></div>
           <div><dt>Flower delivery</dt><dd>Omemee, Lindsay and nearby</dd></div>
         </dl>
@@ -372,25 +380,24 @@ input:focus,select:focus,textarea:focus{border-color:var(--forest);outline:none}
     <section class="band" style="padding-top:26px"><div class="wrap">
       <div class="tiles" id="flowerTiles"></div>
       <div class="aside"><b>Planning ahead?</b><span>Valentine's and Mother's Day sell out first. Pre-order and we'll hold yours.</span></div>
-      <div class="aside" style="background:var(--tileB)"><b>Wedding or event?</b><span>Join the opening list and tick "Weddings &amp; events", and we'll set up a time to talk.</span></div>
+      <div class="aside" style="background:var(--tileB)"><b>Wedding or event?</b><span>Sign up for the newsletter and tick "Weddings &amp; events", and we'll set up a time to talk.</span></div>
     </div></section>
   </div>
 
   <!-- WAITLIST -->
   <div id="v-waitlist" data-view="waitlist" hidden>
-    <section class="page-h" style="padding-bottom:42px"><div class="wrap"><span class="kicker">The opening list</span><h1>Be first through the door</h1><p>Opening date news first, a drink on us opening week, and first pick of pre-order flowers.</p></div></section>
+    <section class="page-h" style="padding-bottom:42px"><div class="wrap"><span class="kicker">The newsletter</span><h1>Stay in the loop</h1><p>News from the shop in your inbox: our opening date, new drinks, seasonal flowers and pre-order reminders. No spam, and you can unsubscribe any time.</p></div></section>
     <div class="wrap">
       <div class="formcard">
         <form id="wlForm" novalidate>
           <div class="field"><label for="wlName">First name</label><input type="text" id="wlName" autocomplete="given-name" required></div>
           <div class="field"><label for="wlEmail">Email</label><input type="email" id="wlEmail" autocomplete="email" inputmode="email" required><span class="err" id="wlEmailErr" hidden>That email doesn't look right. Try name@example.com.</span></div>
-          <div class="field"><label for="wlPhone">Mobile, if you'd like a text</label><input type="tel" id="wlPhone" autocomplete="tel" inputmode="tel"></div>
+          <div class="field"><label for="wlPhone">Mobile, if you'd like texts too</label><input type="tel" id="wlPhone" autocomplete="tel" inputmode="tel"></div>
           <div class="field">
-            <span class="legend" id="wlIntLbl">What brings you in?</span>
+            <span class="legend" id="wlIntLbl">What would you like to hear about?</span>
             <div class="opts" role="group" aria-labelledby="wlIntLbl">
               <label class="opt"><input type="checkbox" id="wlI1" value="Coffee" checked><span>Coffee</span></label>
               <label class="opt"><input type="checkbox" id="wlI2" value="Flowers"><span>Flowers</span></label>
-              <label class="opt"><input type="checkbox" id="wlI3" value="Flower subscription"><span>Weekly flowers</span></label>
               <label class="opt"><input type="checkbox" id="wlI4" value="Weddings & events"><span>Weddings &amp; events</span></label>
               <label class="opt"><input type="checkbox" id="wlI5" value="Coffee cart"><span>The coffee cart</span></label>
               <label class="opt"><input type="checkbox" id="wlI6" value="Workshops"><span>Workshops</span></label>
@@ -398,13 +405,19 @@ input:focus,select:focus,textarea:focus{border-color:var(--forest);outline:none}
           </div>
           <div class="field"><label for="wlTown">Where's home?</label>
             <select id="wlTown"><option>Omemee</option><option>Lindsay</option><option>Peterborough</option><option>Bobcaygeon</option><option>Somewhere else in the Kawarthas</option><option>Just visiting</option></select></div>
-          <button class="btn block" type="submit">Put me on the list</button>
+          <button class="btn block" type="submit">Sign me up</button>
         </form>
         <div class="done" id="wlDone" hidden>
-          <span class="kicker">You're on the list</span>
-          <h2 id="wlDoneH">See you soon</h2>
-          <p>We'll email you the opening date first. Your opening-week drink is on us.</p>
+          <span class="kicker">You're signed up</span>
+          <h2 id="wlDoneH">Thanks for signing up</h2>
+          <p>Watch your inbox for news from the shop, starting with our opening date.</p>
           <a class="btn out" href="#coffee">Look at the coffee menu</a>
+        </div>
+        <div class="done" id="wlSquare" hidden>
+          <span class="kicker">Sign up in one tap</span>
+          <h2>Get news from the shop</h2>
+          <p>Sign-ups are handled by Square, our payment provider. You can unsubscribe from any email.</p>
+          <a class="btn" id="wlSquareBtn" href="#" target="_blank" rel="noopener">Sign up for the newsletter</a>
         </div>
       </div>
     </div>
@@ -423,7 +436,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--forest);outline:none}
     <li><a href="#home" data-tab="home">Home</a></li>
     <li><a href="#coffee" data-tab="coffee">Coffee</a></li>
     <li><a href="#flowers" data-tab="flowers">Flowers</a></li>
-    <li><a href="#waitlist" data-tab="waitlist">The list</a></li>
+    <li><a href="#waitlist" data-tab="waitlist">Newsletter</a></li>
   </ul>
 </nav>
 

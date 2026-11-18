@@ -6,31 +6,30 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",
 const store={get(k,d){try{const v=localStorage.getItem("s7-"+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem("s7-"+k,JSON.stringify(v))}catch(e){}}};
 const SPRIG="/img/sprig.webp", SPRIGF="/img/sprigf.webp";
 
-/* ---------- MENU: loaded from menu.json, the same file the server prices orders from ---------- */
+/* ---------- MENU: read live from the shop's Square Item Library (api/menu.js) ---------- */
 let M;
-try{M=await (await fetch("/menu.json",{cache:"no-cache"})).json()}catch(e){document.body.insertAdjacentHTML("afterbegin",'<p style="padding:16px;background:#f1ddd3">The menu didn\'t load. Please refresh the page.</p>');return}
+try{const r=await fetch("/api/menu");if(!r.ok)throw 0;M=await r.json()}catch(e){document.body.insertAdjacentHTML("afterbegin",'<p style="padding:16px;background:#f1ddd3">The menu didn\'t load. Please refresh the page.</p>');return}
 const C=M.coffee, F=M.flowers;
 const COFFEE=Object.fromEntries(C.categories.map(c=>[c.name,c.items]));
 const FLOWERS=F.items;
 const allDrinks=()=>C.categories.flatMap(c=>c.items);
+const item=id=>allDrinks().find(x=>x.id===id)||FLOWERS.find(x=>x.id===id);
+const minP=i=>Math.min(...i.v.map(v=>v.p));
+const fromP=i=>(new Set(i.v.map(v=>v.p)).size>1||i.mods.some(m=>m.o.some(o=>o.d&&!o.def)))?"from "+money(minP(i)):money(minP(i));
 
-/* ---------- CART: stores ids and choices only; prices are recomputed on the server ---------- */
-let cart=store.get("cart2",[]).filter(l=>l&&(l.kind==="coffee"?allDrinks().some(d=>d.id===l.id):FLOWERS.some(f=>f.id===l.id)));
+/* ---------- CART: stores Square ids and choices only; Square prices the order itself ---------- */
+let cart=store.get("cart3",[]).filter(l=>{const i=l&&item(l.id);return i&&i.v.some(v=>v.id===l.v&&!v.out)});
 function describe(l){
-  if(l.kind==="coffee"){const d=allDrinks().find(x=>x.id===l.id),hasSz=d.sz!==false&&!d.bake,hasMilk=d.milk!==false&&!d.bake;
-    let p=d.p;const o=[];
-    if(hasSz){const s=C.sizes[l.size??C.defaultSize];p+=s.d;o.push(s.n)}
-    if(hasMilk){const m=C.milks[l.milk??0];p+=m.d;o.push(m.n==="No milk"?m.n:m.n+" milk")}
-    (l.adds||[]).forEach(i=>{p+=C.adds[i].d;o.push(C.adds[i].n)});
-    if(l.note)o.push(`"${l.note}"`);
-    return {n:d.n,unit:p,opts:o.join(", ")}}
-  const f=FLOWERS.find(x=>x.id===l.id),s=f.sizes[l.size||0],o=[];
-  if(f.sizes.length>1)o.push(s.n);o.push(F.occasions[l.occasion||0]);
-  if(l.preorderDate)o.push("for "+new Date(l.preorderDate+"T12:00").toLocaleDateString("en-CA",{weekday:"long",month:"long",day:"numeric"}));
-  if(l.card)o.push(`card: "${l.card}"`);
-  return {n:f.n,unit:f.p+s.d,opts:o.join(", ")};
+  const i=item(l.id),v=i.v.find(x=>x.id===l.v),o=[];let p=v.p;
+  if(i.v.length>1)o.push(v.n);
+  i.mods.forEach(m=>m.o.forEach(x=>{if((l.mods||[]).includes(x.id)){p+=x.d;o.push(m.n.toLowerCase()==="milk"&&!/milk/i.test(x.n)?x.n+" milk":x.n)}}));
+  if(i.kind==="coffee"){if(l.note)o.push(`"${l.note}"`)}
+  else{o.push(F.occasions[l.occasion||0]);
+    if(l.preorderDate)o.push("for "+new Date(l.preorderDate+"T12:00").toLocaleDateString("en-CA",{weekday:"long",month:"long",day:"numeric"}));
+    if(l.card)o.push(`card: "${l.card}"`)}
+  return {n:i.n,unit:p,opts:o.join(", "),kind:i.kind};
 }
-const save=()=>{store.set("cart2",cart);$("#cartN").textContent=cart.reduce((a,l)=>a+l.q,0)};
+const save=()=>{store.set("cart3",cart);$("#cartN").textContent=cart.reduce((a,l)=>a+l.q,0)};
 
 /* ---------- ROUTING ---------- */
 const VIEWS=["home","coffee","flowers","waitlist"];
@@ -47,21 +46,24 @@ const once=["Fresh flowers","Coffee bar","Mobile coffee cart","Downtown Omemee",
 $("#ribbon").innerHTML=once+once+once+once;
 
 /* ---------- TILES ---------- */
-const tile=(f,i)=>`<button class="tile" type="button" data-fid="${f.id}"><span class="pic">${f.flag?`<span class="flag">${esc(f.flag)}</span>`:""}<img src="${i%4===0||i%4===3?SPRIGF:SPRIG}" alt=""></span><b>${esc(f.n)}</b><span class="pr">${f.sizes.length>1?"from ":""}${short(f.p)}</span></button>`;
-$("#featTiles").innerHTML=FLOWERS.slice(0,4).map(tile).join("");
+const tile=(f,i)=>`<button class="tile" type="button" data-fid="${f.id}"><span class="pic">${f.out?`<span class="flag out">Sold out</span>`:f.tag?`<span class="flag">${esc(f.tag)}</span>`:""}${f.img?`<img class="photo" src="${esc(f.img)}" alt="" loading="lazy">`:`<img src="${i%4===0||i%4===3?SPRIGF:SPRIG}" alt="">`}</span><b>${esc(f.n)}</b><span class="pr">${fromP(f).replace(/\.00$/,"")}</span></button>`;
+$("#featTiles").innerHTML=FLOWERS.filter(f=>!f.out).slice(0,4).map(tile).join("");
+if(!FLOWERS.length)$("#flowerTiles").insertAdjacentHTML("beforebegin",'<p class="empty">Flowers are coming soon.</p>');
 $("#flowerTiles").innerHTML=FLOWERS.map(tile).join("");
-document.addEventListener("click",e=>{const b=e.target.closest("[data-fid]");if(b)openFlower(FLOWERS.find(f=>f.id===b.dataset.fid))});
+document.addEventListener("click",e=>{const b=e.target.closest("[data-fid]");if(b)openFlower(item(b.dataset.fid))});
 
 /* ---------- COFFEE ---------- */
-const priceLabel=i=>(i.sz===false||i.bake)?money(i.p):"from "+money(i.p);
-$("#featDrinks").innerHTML=allDrinks().filter(d=>d.tag).concat(allDrinks().filter(d=>d.id==="latte")).slice(0,4).map(d=>`<button class="drink" type="button" data-id="${d.id}"><span class="nm">${esc(d.n)}</span><span class="dots"></span><span class="pr">${money(d.p)}</span></button>`).join("");
+const priceLabel=i=>i.out?"Sold out":fromP(i);
+const feat=allDrinks().filter(d=>d.tag&&!d.out);
+$("#featDrinks").innerHTML=feat.concat(allDrinks().filter(d=>!d.tag&&!d.out)).slice(0,4).map(d=>`<button class="drink" type="button" data-id="${d.id}"><span class="nm">${esc(d.n)}</span><span class="dots"></span><span class="pr">${money(minP(d))}</span></button>`).join("");
 const cats=Object.keys(COFFEE);
 $("#coffeeTabs").innerHTML=cats.map((c,i)=>`<button class="cat" type="button" aria-pressed="${i===0}" data-cat="${i}">${esc(c)}</button>`).join("");
-$("#coffeeList").innerHTML=cats.map((c,ci)=>`<h2 id="cat-${ci}">${esc(c)}</h2>`+COFFEE[c].map(i=>`<button class="dish" type="button" data-id="${i.id}"><span class="r"><span class="nm">${esc(i.n)}${i.tag?`<span class="tagx">${esc(i.tag)}</span>`:""}</span><span class="dots"></span><span class="pr">${priceLabel(i)}</span></span><span class="ds">${esc(i.d)}</span></button>`).join("")).join("");
+$("#coffeeList").innerHTML=cats.map((c,ci)=>`<h2 id="cat-${ci}">${esc(c)}</h2>`+COFFEE[c].map(i=>`<button class="dish${i.out?" out":""}" type="button" data-id="${i.id}"><span class="r"><span class="nm">${esc(i.n)}${i.tag?`<span class="tagx">${esc(i.tag)}</span>`:""}</span><span class="dots"></span><span class="pr">${priceLabel(i)}</span></span>${i.d?`<span class="ds">${esc(i.d)}</span>`:""}</button>`).join("")).join("");
+if(!cats.length)$("#coffeeList").innerHTML='<p class="empty">Our coffee menu is coming soon.</p>';
 $("#coffeeTabs").addEventListener("click",e=>{const b=e.target.closest("[data-cat]");if(!b)return;
   $$("#coffeeTabs .cat").forEach(x=>x.setAttribute("aria-pressed",x===b));
   const t=$("#cat-"+b.dataset.cat);window.scrollTo({top:t.getBoundingClientRect().top+scrollY-130,behavior:"smooth"})});
-document.addEventListener("click",e=>{const b=e.target.closest(".dish[data-id],.drink[data-id]");if(b)openDrink(allDrinks().find(i=>i.id===b.dataset.id))});
+document.addEventListener("click",e=>{const b=e.target.closest(".dish[data-id],.drink[data-id]");if(b)openDrink(item(b.dataset.id))});
 
 /* ---------- SHEET ---------- */
 let lastFocus=null;
@@ -70,40 +72,54 @@ function closeSheet(){$("#scrim").classList.remove("on");$("#sheet").classList.r
 $("#scrim").addEventListener("click",()=>{if(!paying)closeSheet()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!paying)closeSheet()});
 $("#sheet").addEventListener("click",e=>{if(e.target.closest("[data-close]")&&!paying)closeSheet()});
+const pic=i=>i.img?`<img class="sheet-pic" src="${esc(i.img)}" alt="">`:"";
 const head=(t,sub)=>`<div class="sheet-h"><div><h2 id="sheetTitle">${t}</h2>${sub?`<p>${sub}</p>`:""}</div><button class="x" type="button" data-close aria-label="Close">×</button></div>`;
-const choice=(name,opts,sel=0)=>`<div class="field"><span class="legend">${name}</span><div class="choice" data-seg="${name}">${opts.map((o,i)=>`<button type="button" aria-pressed="${i===sel}" data-i="${i}">${esc(o.n)}${o.d?`<small>+${money(o.d)}</small>`:""}</button>`).join("")}</div></div>`;
-function wire(root,cb){root.querySelectorAll("[data-seg]").forEach(g=>g.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;g.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));cb&&cb()}))}
+const choice=(name,opts,sel=0,key=name)=>`<div class="field"><span class="legend">${esc(name)}</span><div class="choice${opts.length>5?" many":""}" data-seg="${esc(key)}">${opts.map((o,i)=>`<button type="button" aria-pressed="${i===sel}" data-i="${i}"${o.off?" disabled":""}>${esc(o.n)}${o.d?`<small>+${money(o.d)}</small>`:""}${o.off?`<small>Sold out</small>`:""}</button>`).join("")}</div></div>`;
+function wire(root,cb){root.querySelectorAll("[data-seg]").forEach(g=>g.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.disabled)return;g.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));cb&&cb()}))}
 const val=(root,name)=>+root.querySelector(`[data-seg="${name}"] [aria-pressed="true"]`).dataset.i;
 const qtyHtml=`<div class="field"><span class="legend">How many</span><div class="qty"><button type="button" data-q="-1" aria-label="One fewer">−</button><output id="q">1</output><button type="button" data-q="1" aria-label="One more">+</button></div></div>`;
 
+/* Size = the item's variations in Square. Other choices = its modifier lists (milk, add-ons, a vase...). */
+function sizeHtml(i,label){if(i.v.length<2)return"";const first=Math.max(0,i.v.findIndex(v=>!v.out));
+  return choice("Size",i.v.map(v=>({n:label?`${v.n} ${short(v.p)}`:v.n,d:label?0:v.p-minP(i),off:v.out})),first,"v")}
+function modsHtml(i){return i.mods.map((m,k)=>{
+  if(!m.multi){const o=(m.req?[]:[{id:"",n:"None",d:0}]).concat(m.o),def=o.findIndex(x=>x.def);return choice(m.n,o,def<0?0:def,"m"+k)}
+  return `<div class="field"><span class="legend">${esc(m.n)}${m.max<m.o.length?` <small>(up to ${m.max})</small>`:""}</span><div class="opts" data-multi="${k}">${m.o.map(x=>`<label class="opt"><input type="checkbox" value="${esc(x.id)}"${x.def?" checked":""}><span>${esc(x.n)}${x.d?` +${money(x.d)}`:""}</span></label>`).join("")}</div></div>`}).join("")}
+function readSel(root,i){
+  const v=i.v.length>1?i.v[val(root,"v")].id:i.v[0].id,mods=[];
+  i.mods.forEach((m,k)=>{if(!m.multi){const o=(m.req?[]:[{id:""}]).concat(m.o)[val(root,"m"+k)];if(o.id)mods.push(o.id)}
+    else root.querySelectorAll(`[data-multi="${k}"] input:checked`).forEach(c=>mods.push(c.value))});
+  return {v,mods}}
+function wireMulti(root,i,cb){i.mods.forEach((m,k)=>{if(!m.multi)return;const g=root.querySelector(`[data-multi="${k}"]`);
+  g.addEventListener("change",e=>{if(g.querySelectorAll("input:checked").length>m.max){e.target.checked=false;toast(`Up to ${m.max} for ${m.n.toLowerCase()}`)}cb()})})}
+const addBtn=i=>i.out?`<button class="btn block" type="button" disabled>Sold out</button>`:`<button class="btn block" type="button" id="addBtn">Add</button>`;
+
 function openDrink(d){
-  const hasSz=d.sz!==false&&!d.bake, hasMilk=d.milk!==false&&!d.bake;
-  openSheet(head(esc(d.n),esc(d.d))+
-    (hasSz?choice("Size",C.sizes,C.defaultSize):"")+(hasMilk?choice("Milk",C.milks):"")+
-    (d.bake?"":`<div class="field"><span class="legend">Anything extra?</span><div class="opts">${C.adds.map((a,i)=>`<label class="opt"><input type="checkbox" data-add="${i}"><span>${esc(a.n)} +${money(a.d)}</span></label>`).join("")}</div></div>
-     <div class="field"><label for="dNote">Note for the barista</label><input type="text" id="dNote" maxlength="140" placeholder="Extra hot, half sweet…"></div>`)+
-    qtyHtml+`<button class="btn block" type="button" id="addBtn">Add</button>`);
+  const extra=d.v.length>1||d.mods.length;
+  openSheet(pic(d)+head(esc(d.n),esc(d.d))+(d.out?"":sizeHtml(d)+modsHtml(d)+
+    (extra?`<div class="field"><label for="dNote">Note for the barista</label><input type="text" id="dNote" maxlength="140" placeholder="Extra hot, half sweet…"></div>`:"")+qtyHtml)+addBtn(d));
+  if(d.out)return;
   const root=$("#sheetBody");let q=1;
-  const line=()=>({kind:"coffee",id:d.id,size:hasSz?val(root,"Size"):undefined,milk:hasMilk?val(root,"Milk"):undefined,adds:[...root.querySelectorAll("[data-add]:checked")].map(c=>+c.dataset.add),note:($("#dNote")&&$("#dNote").value.trim())||"",q});
+  const line=()=>({id:d.id,...readSel(root,d),note:($("#dNote")&&$("#dNote").value.trim())||"",q});
   const upd=()=>{$("#q").textContent=q;$("#addBtn").textContent=`Add to order · ${money(describe(line()).unit*q)}`};
-  wire(root,upd);root.querySelectorAll("[data-add]").forEach(c=>c.addEventListener("change",upd));
+  wire(root,upd);wireMulti(root,d,upd);
   root.querySelectorAll("[data-q]").forEach(b=>b.addEventListener("click",()=>{q=Math.max(1,Math.min(20,q+ +b.dataset.q));upd()}));upd();
   $("#addBtn").addEventListener("click",()=>{cart.push(line());save();closeSheet();toast(`${d.n} added to your order`)});
 }
 
 function day(days){const d=new Date();d.setDate(d.getDate()+days);return d.toLocaleDateString("en-CA")}
 function openFlower(f){
-  openSheet(head(esc(f.n),esc(f.d))+
-    (f.sizes.length>1?choice("Size",f.sizes.map(s=>({n:`${s.n} ${short(f.p+s.d)}`,d:0}))):"")+
+  openSheet(pic(f)+head(esc(f.n),esc(f.d))+(f.out?addBtn(f):sizeHtml(f,true)+modsHtml(f)+
     choice("When",[{n:"Soonest",d:0},{n:"Pre-order a date",d:0}])+
     `<div class="field" id="dateF" hidden><label for="fDate">Date</label><input type="date" id="fDate" min="${day(F.preorderMinDays)}" max="${day(F.preorderMaxDays)}" value="${day(7)}"><small>We'll hold your flowers and text you the day before.</small></div>
     <div class="field"><label for="fOcc">What's it for?</label><select id="fOcc">${F.occasions.map((o,i)=>`<option value="${i}">${esc(o)}</option>`).join("")}</select></div>
     <div class="field"><label for="fCard">Card message</label><textarea id="fCard" maxlength="200" placeholder="Optional. We'll handwrite it."></textarea></div>`+
-    qtyHtml+`<button class="btn block" type="button" id="addBtn">Add</button>`);
+    qtyHtml+addBtn(f)));
+  if(f.out)return;
   const root=$("#sheetBody");let q=1;
-  const line=()=>({kind:"flowers",id:f.id,size:f.sizes.length>1?val(root,"Size"):0,occasion:+$("#fOcc").value,preorderDate:val(root,"When")===1?$("#fDate").value:null,card:$("#fCard").value.trim(),q});
+  const line=()=>({id:f.id,...readSel(root,f),occasion:+$("#fOcc").value,preorderDate:val(root,"When")===1?$("#fDate").value:null,card:$("#fCard").value.trim(),q});
   const upd=()=>{$("#q").textContent=q;$("#dateF").hidden=val(root,"When")!==1;$("#addBtn").textContent=`${val(root,"When")?"Pre-order":"Add to order"} · ${money(describe(line()).unit*q)}`};
-  wire(root,upd);root.querySelectorAll("[data-q]").forEach(b=>b.addEventListener("click",()=>{q=Math.max(1,Math.min(10,q+ +b.dataset.q));upd()}));upd();
+  wire(root,upd);wireMulti(root,f,upd);root.querySelectorAll("[data-q]").forEach(b=>b.addEventListener("click",()=>{q=Math.max(1,Math.min(10,q+ +b.dataset.q));upd()}));upd();
   $("#addBtn").addEventListener("click",()=>{const l=line();
     if(l.preorderDate&&(l.preorderDate<day(F.preorderMinDays)||l.preorderDate>day(F.preorderMaxDays))){toast(`Pick a date ${F.preorderMinDays} to ${F.preorderMaxDays} days from today`);return}
     cart.push(l);save();closeSheet();toast(l.preorderDate?"Pre-order added to your order":`${f.n} added to your order`)});
@@ -121,7 +137,7 @@ function totals(deliver){const s=cart.reduce((a,l)=>a+describe(l).unit*l.q,0),d=
 
 function openCart(){
   if(!cart.length){openSheet(head("Your order")+`<p class="empty">Nothing in here yet.</p><div class="btns"><a class="btn out" href="#coffee" data-close>Coffee</a><a class="btn out" href="#flowers" data-close>Flowers</a></div>`);return}
-  const hasC=cart.some(l=>l.kind==="coffee"),hasF=cart.some(l=>l.kind==="flowers");
+  const hasC=cart.some(l=>item(l.id).kind==="coffee"),hasF=cart.some(l=>item(l.id).kind==="flowers");
   const draft=store.get("me",{});
   openSheet(head("Your order")+
     `<div>${cart.map((l,i)=>{const x=describe(l);return `<div class="line"><b>${l.q} × ${esc(x.n)}</b><span class="p">${money(x.unit*l.q)}</span><small>${esc(x.opts)}</small><button class="link rm" type="button" data-rm="${i}">Remove</button></div>`}).join("")}</div>`+
@@ -177,7 +193,7 @@ function openCart(){
     if(payMethods.length){pay(payMethods[0]);return}
     if(!details())return;
     const cfg=await config();
-    if(!cfg.appId||!cfg.locationId||cfg.ordersOpen===false){err("Online ordering isn't open yet. Join the opening list and we'll let you know.");return}
+    if(!cfg.appId||!cfg.locationId||cfg.ordersOpen===false){err("Online ordering isn't open yet. Sign up for our newsletter and we'll let you know.");return}
     $("#payBtn").disabled=true;$("#payBtn").textContent="Loading secure payment…";
     try{
       await loadSquare(cfg.env);
@@ -209,10 +225,12 @@ $("#wlForm").addEventListener("submit",async e=>{
   try{
     await sendForm("waitlist",{name:nm,email:em,phone:$("#wlPhone").value.trim(),interests:$$("#wlForm .opt input:checked").map(c=>c.value).join(", "),town:$("#wlTown").value});
     store.set("waitlist",{name:nm});showDone(nm);window.scrollTo(0,0);
-  }catch(err){btn.disabled=false;btn.textContent="Put me on the list";toast("That didn't go through. Please try again.")}
+  }catch(err){btn.disabled=false;btn.textContent="Sign me up";toast("That didn't go through. Please try again.")}
 });
-function showDone(n){$("#wlDoneH").textContent=`See you soon, ${n}`;$("#wlForm").hidden=true;$("#wlDone").hidden=false}
+function showDone(n){$("#wlDoneH").textContent=`Thanks, ${n}`;$("#wlForm").hidden=true;$("#wlDone").hidden=false}
 const prior=store.get("waitlist",null);if(prior)showDone(prior.name);
+// If the shop uses Square Marketing's own sign-up page (NEWSLETTER_URL in Vercel), send people there instead of the form.
+config().then(c=>{if(/^https:\/\//.test(c.newsletterUrl||"")){$("#wlSquareBtn").href=c.newsletterUrl;$("#wlForm").hidden=true;$("#wlDone").hidden=true;$("#wlSquare").hidden=false}});
 
 $("#openBooking").addEventListener("click",()=>{
   openSheet(head("Book the coffee cart","Tell us a little about it and we'll get back to you within two days with dates and a quote.")+
