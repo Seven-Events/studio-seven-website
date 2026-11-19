@@ -85,3 +85,26 @@ h1,h2,h3{font-family:var(--display);font-weight:300;letter-spacing:-.035em}
 .aside b,.menu h2{font-weight:400;letter-spacing:-.02em}
 .foot .staff{font-size:.8rem;color:#3d5149;margin-left:auto;text-decoration:underline;text-underline-offset:3px}
 .cats{margin-top:10px}
+
+/* =========== Full product pages (#p/<id>) =========== */
+a.tile{text-decoration:none;color:inherit}
+.pdp{padding-block:22px 10px;display:flex;flex-direction:column;gap:18px}
+.pdp-back{color:var(--forest);font-weight:500;text-decoration:none;font-size:.95rem;align-self:flex-start}
+.pdp-back:hover{text-decoration:underline;text-underline-offset:3px}
+.pdp-body{display:flex;flex-direction:column;gap:20px}
+.pdp-body .sheet-pic{aspect-ratio:1/1;border-radius:0;margin:0;box-shadow:0 0 0 1px rgba(92,74,38,.25),0 12px 22px -14px rgba(92,74,38,.5)}
+.pdp-body .sheet-h h1{font-size:clamp(2.4rem,9vw,3.4rem);color:var(--forest)}
+.pdp-body .sheet-h p{color:var(--muted);margin-top:8px;max-width:46ch}
+.pdp-body .sheet-h .pdp-price{font-size:1.25rem;font-weight:600;color:var(--ink);margin-top:10px}
+.pdp-more{margin-top:34px;display:flex;flex-direction:column;gap:18px}
+.pdp-more h2{font-size:2rem}
+@media (min-width:900px){
+  .pdp{padding-block:34px 10px}
+  .pdp-body{display:grid;grid-template-columns:1.05fr 1fr;column-gap:64px;row-gap:22px;align-items:start}
+  .pdp-body>*{grid-column:2}
+  .pdp-body .sheet-pic{aspect-ratio:4/5;grid-column:1;grid-row:1 / span 20;position:sticky;top:96px}
+  .pdp-body .sheet-h h1{font-size:4rem}
+  .pdp-body .btn.block{width:100%}
+  .pdp-more{margin-top:64px}
+  .pdp-more .tiles{grid-template-columns:repeat(3,1fr)}
+}
