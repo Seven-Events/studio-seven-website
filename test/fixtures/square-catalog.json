@@ -153,7 +153,7 @@
    "id": "CAT_ESPRESSO",
    "present_at_all_locations": true,
    "category_data": {
-    "name": "Espresso"
+    "name": "hot drinks"
    }
   },
   {
@@ -733,7 +733,7 @@
    "id": "CAT_NO_COFFEE",
    "present_at_all_locations": true,
    "category_data": {
-    "name": "No coffee"
+    "name": "Cold Drinks"
    }
   },
   {
@@ -1135,7 +1135,7 @@
    "id": "CAT_FLOWERS",
    "present_at_all_locations": true,
    "category_data": {
-    "name": "Flowers"
+    "name": "FRESH FLOWERS"
    }
   },
   {

@@ -98,10 +98,10 @@ Everything on the website menu comes from **Square Dashboard > Items** (or **Ite
 
 | Square category | Shows on the website under |
 | --- | --- |
-| Espresso, House drinks, No coffee | Coffee, as tabs in that order |
-| Flowers | Flowers |
+| Hot drinks, Cold drinks | Coffee, as sections in that order |
+| Fresh flowers | Flowers |
 
-Items in any other category (for example "Merch" or staff-only items) stay in-store only. To rename, add or reorder the coffee tabs, change the lists in `shop-settings.json`, or ask Claude to.
+Capital letters don't matter, so "hot drinks" in Square works too, but the spelling does. Items in any other category (for example "Merch" or staff-only items) stay in-store only. To rename, add or reorder the coffee tabs, change the lists in `shop-settings.json`, or ask Claude to.
 
 **Items**
 
