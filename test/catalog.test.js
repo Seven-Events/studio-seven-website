@@ -69,3 +69,12 @@ test("photo focus spots come from shop settings by item name, and bad values fal
   assert.equal(m.flowers.items.find((i) => i.n === "Dried Wreath").focus, null);
   assert.equal(buildMenu(fx.objects, fx.counts, "L1", { ...settings, focus: undefined }).flowers.items[0].focus, null);
 });
+
+test("every Square photo on an item comes through, in order, for the product page gallery", () => {
+  const objs = clone();
+  objs.find((o) => o.item_data && o.item_data.name === "Market Bunch").item_data.image_ids = ["IMG_market", "IMG_gone", "IMG_two"];
+  objs.push({ type: "IMAGE", id: "IMG_two", image_data: { url: "https://example.com/two.jpg" } });
+  const f = buildMenu(objs, fx.counts, "L1").flowers.items[0];
+  assert.equal(f.img, "/img/sprig.webp");
+  assert.deepEqual(f.imgs, ["/img/sprig.webp", "https://example.com/two.jpg"]);
+});
