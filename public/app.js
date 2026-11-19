@@ -12,8 +12,6 @@ try{const r=await fetch("/api/menu");if(!r.ok)throw 0;M=await r.json()}catch(e){
 const C=M.coffee, F=M.flowers;
 const COFFEE=Object.fromEntries(C.categories.map(c=>[c.name,c.items]));
 const FLOWERS=F.items;
-/* Focus spots come from shop-settings.json. Staff previewing picks from /focus.html on this device see those first. */
-try{const ov=JSON.parse(localStorage.getItem("s7-focus"))||{};FLOWERS.forEach(f=>{if(ov[f.n])f.focus=ov[f.n]})}catch(e){}
 const allDrinks=()=>C.categories.flatMap(c=>c.items);
 const item=id=>allDrinks().find(x=>x.id===id)||FLOWERS.find(x=>x.id===id);
 const minP=i=>Math.min(...i.v.map(v=>v.p));

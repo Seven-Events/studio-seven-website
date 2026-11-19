@@ -75,9 +75,6 @@ h1,h2,h3{font-weight:600;letter-spacing:-.03em;line-height:1.02}
   .band.cart2 h2,.cart2 h2{font-size:2.6rem!important}
 }
 
-/* =========== One colour grade for every product photo =========== */
-/* Warm, soft and slightly muted, to sit with the cream walls. Applied to whatever image Square sends. */
-.tile .pic img.photo,.sheet-pic{filter:sepia(.14) saturate(.88) contrast(.94) brightness(1.04)}
 
 .tile b,.drink .nm,.dish .nm,.line b,.cl span,.shopall,.cartpic span,.sheet-h h2{font-family:"Work Sans",system-ui,sans-serif}
 

@@ -70,6 +70,7 @@ Square's test card is `4111 1111 1111 1111`, with any future expiry date, any CV
 | `NOTIFY_EMAIL` | Where the shop wants the emails. To send to several people, separate the addresses with commas. |
 | `FROM_EMAIL` | *Optional, after verifying your domain:* `Studio Seven <website@yourdomain>` |
 | `ORDERS_OPEN` | `true` (set to `false` to pause online ordering) |
+| `STAFF_PASSWORD` | A password you choose for saving photo focus spots at `/focus.html` |
 
 3. Redeploy so the variables take effect (**Deployments > ... > Redeploy**).
 
@@ -107,8 +108,8 @@ Capital letters don't matter, so "hot drinks" in Square works too, but the spell
 
 - **Name, description and price** are the item's name, description and price in Square.
 - **Sizes** are the item's **variations**, such as "8 oz / 12 oz / 16 oz" or "Standard / Generous". Each one has its own price. An item with one variation has no size choice.
-- **Photos:** add an image to the item in Square. The first image shows on the flower tiles and at the top of the order sheet. Square-shaped or portrait photos look best on the flower tiles. Every product photo gets the same warm colour grade on the site automatically, so photos taken at different times sit together. A very blue or dark photo still needs a quick edit before upload.
-- **Photo focus:** open `/focus.html` on the website and click the part of each flower photo that should always stay in view. The previews show the phone, square and wide crops. Your picks show on your own device straight away. To make them live for everyone, copy the settings line it gives you into `focus` in `shop-settings.json` and commit (or ask Claude to).
+- **Photos:** add an image to the item in Square. The first image shows on the flower tiles and at the top of the order sheet. Square-shaped or portrait photos look best on the flower tiles. Colour-grade photos before uploading so they match each other; the site shows them as they are.
+- **Photo focus:** open `/focus.html` on the website, tap the part of each flower photo that should always stay in view, and press **Save**. It asks for the staff password the first time on each device. The spot is saved on the item in Square (as "Photo focus") and shows for everyone within about a minute. Saving needs `STAFF_PASSWORD` set in Vercel (see the environment variables table).
 - **Milk, syrups and add-ons** are **modifier sets** attached to the item. A modifier set that allows one choice shows as buttons, and one that allows several shows as checkboxes. Mark a set **required** to make customers pick, for example milk on a latte. A modifier that's on by default is pre-selected.
 - **To hide an item from the website**, move it out of the website categories, archive it, or remove the shop location from it.
 - **Order:** items appear in the order you arrange them within the category in Square.
