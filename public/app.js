@@ -67,8 +67,10 @@ document.addEventListener("scroll",e=>{const t=e.target;if(!t.classList||!t.clas
 const heroF=FLOWERS.find(f=>f.img&&/signature/i.test(f.n+" "+(f.tag||"")))||FLOWERS.find(f=>f.img&&/\bwrap\b/i.test(f.n))||FLOWERS.find(f=>f.img&&!f.out);
 /* puts an item's photo into a hero tile, linked to its page */
 const photoTile=(sel,f,label)=>{const c=$(sel);c.href=`#p/${encodeURIComponent(f.id)}`;c.classList.add("has-photo");c.innerHTML=`<img class="photo" src="${esc(f.img)}" style="object-position:${esc(f.focus||"50% 50%")}" alt="${esc(f.n)}"><span>${esc(label||f.n)}</span>`};
-const bowlF=FLOWERS.find(f=>f.img&&/holiday bowl/i.test(f.n));
-if(bowlF)photoTile(".collage .c3",bowlF,"Pre-orders");
+/* Pre-orders tile: a fixed shop photo (public/img/preorder.webp), linked to the Holiday Bowl page when it's on the menu */
+const bowlF=FLOWERS.find(f=>/holiday bowl/i.test(f.n));
+photoTile(".collage .c3",{id:null,n:"Christmas pre-order flowers",img:"/img/preorder.webp",focus:"50% 45%"},"Pre-orders");
+if(!bowlF)$(".collage .c3").href="#flowers";else $(".collage .c3").href=`#p/${encodeURIComponent(bowlF.id)}`;
 if(heroF)photoTile(".collage .c1",heroF);
 $("#featTiles").innerHTML=FLOWERS.filter(f=>!f.out).slice(0,4).map(tile).join("");
 if(!FLOWERS.length)$("#flowerTiles").insertAdjacentHTML("beforebegin",'<p class="empty">Flowers are coming soon.</p>');
