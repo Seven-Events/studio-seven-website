@@ -71,7 +71,9 @@ const photoTile=(sel,f,label)=>{const c=$(sel);c.href=`#p/${encodeURIComponent(f
 const bowlF=FLOWERS.find(f=>/holiday bowl/i.test(f.n));
 photoTile(".collage .c3",{id:null,n:"Christmas pre-order flowers",img:"/img/preorder.webp",focus:"50% 45%"},"Pre-orders");
 if(!bowlF)$(".collage .c3").href="#flowers";else $(".collage .c3").href=`#p/${encodeURIComponent(bowlF.id)}`;
-if(heroF)photoTile(".collage .c1",heroF);
+/* the big hero tile uses a fixed shop photo (public/img/signature-wrap.webp), linked to the wrap's page when it's on the menu */
+photoTile(".collage .c1",{id:heroF&&/signature|wrap/i.test(heroF.n)?heroF.id:null,n:heroF&&/signature|wrap/i.test(heroF.n)?heroF.n:"Signature wrap",img:"/img/signature-wrap.webp",focus:"50% 45%"});
+if(!(heroF&&/signature|wrap/i.test(heroF.n)))$(".collage .c1").href="#flowers";
 $("#featTiles").innerHTML=FLOWERS.filter(f=>!f.out).slice(0,4).map(tile).join("");
 if(!FLOWERS.length)$("#flowerTiles").insertAdjacentHTML("beforebegin",'<p class="empty">Flowers are coming soon.</p>');
 $("#flowerTiles").innerHTML=FLOWERS.map(tile).join("");
