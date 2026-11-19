@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Photo Focus</title>
+<link rel="icon" href="/img/sprigf.webp" type="image/webp">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600&display=swap">
+<style>
+:root{--plaster:#f7f2e4;--trim:#fbf8ef;--forest:#254641;--ink:#22332f;--muted:#5d625a;--door:#6b6a1d;--brick:#a4573f;--rule:#ddd2b6;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--plaster);color:var(--ink);font:16px/1.55 "Work Sans",system-ui,sans-serif}
+header{background:var(--trim);box-shadow:0 3px 0 var(--door);position:sticky;top:0;z-index:5}
+header .w{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:10px}
+header img{height:38px}
+header a{color:var(--forest);font-weight:500;text-decoration:none}
+.w{max-width:1100px;margin:0 auto;padding-inline:16px}
+h1{font:300 2.8rem/1.05 "Work Sans",sans-serif;letter-spacing:-.035em;color:var(--forest);margin:34px 0 8px}
+.lead{color:var(--muted);max-width:62ch;margin:0 0 28px}
+.lead a{color:var(--forest)}
+.item{background:var(--trim);box-shadow:inset 0 0 0 1px rgba(92,74,38,.25);padding:20px;margin-bottom:24px;display:grid;gap:20px}
+@media(min-width:860px){.item{grid-template-columns:1.1fr 1fr}}
+.item h2{font:400 1.6rem/1.1 "Work Sans",sans-serif;letter-spacing:-.02em;color:var(--forest);margin:0 0 4px}
+.hint{color:var(--muted);font-size:.9rem;margin:0 0 12px}
+.stage{position:relative;cursor:crosshair;line-height:0;user-select:none;touch-action:none}
+.stage img{width:100%;height:auto;display:block}
+.dot{position:absolute;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px var(--brick),0 2px 8px rgba(0,0,0,.4);pointer-events:none}
+.dot::after{content:"";position:absolute;inset:9px;border-radius:50%;background:var(--brick)}
+.previews{display:grid;grid-template-columns:1fr 1fr 1.6fr;gap:12px;align-items:end}
+.pv{display:flex;flex-direction:column;gap:6px}
+.pv div{overflow:hidden;box-shadow:0 0 0 1px rgba(92,74,38,.25)}
+.pv img{width:100%;height:100%;object-fit:cover;display:block;filter:sepia(.14) saturate(.88) contrast(.94) brightness(1.04)}
+.pv small{font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+.val{font:600 .95rem "Work Sans";color:var(--forest);background:#efe7d0;padding:6px 10px}
+button{font:600 .82rem "Work Sans";letter-spacing:.06em;text-transform:uppercase;border:1.5px solid var(--door);background:transparent;color:var(--door);min-height:40px;padding:0 16px;border-radius:3px;cursor:pointer}
+button.primary{background:var(--door);color:#f6f1df}
+.out{position:sticky;bottom:0;background:var(--forest);color:#f3eedf;padding:16px 0;margin-top:10px}
+.out .w{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.out code{font:500 .85rem ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-word;flex:1;min-width:240px}
+.out button{border-color:#f3eedf;color:#f3eedf}
+.saved{font-size:.85rem;color:var(--door);font-weight:600;opacity:0;transition:opacity .2s}
+.saved.on{opacity:1}
+</style>
+</head>
+<body>
+<header><div class="w"><a href="/#flowers"><img src="/img/logo.webp" alt="Studio Seven"></a><a href="/#flowers">Back to the shop</a></div></header>
+<main class="w">
+  <h1>Photo focus</h1>
+  <p class="lead">Click or tap the part of each photo that should always stay in view. The previews show how it will be cropped on a phone, on the shop page and in a wide banner. Your picks show on the shop pages on this device straight away. To make them live for everyone, copy the settings line below into <b>focus</b> in <a href="https://github.com/seven-events/studio-seven-website/edit/main/shop-settings.json">shop-settings.json</a> and save. The site updates in about a minute.</p>
+  <div id="list"></div>
+</main>
+<div class="out"><div class="w"><code id="code"></code><button type="button" id="copy">Copy settings</button></div></div>
+<script>
+(async function(){
+  const KEY="s7-focus";
+  const load=()=>{try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return {}}};
+  const save=o=>{try{localStorage.setItem(KEY,JSON.stringify(o))}catch(e){}};
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  let M;try{M=await (await fetch("/api/menu")).json()}catch(e){document.getElementById("list").innerHTML='<p class="lead">The menu did not load. Please refresh.</p>';return}
+  const items=M.flowers.items.filter(f=>f.img);
+  let F=load();
+  const pos=f=>F[f.n]||f.focus||"50% 50%";
+  if(!items.length)document.getElementById("list").innerHTML="<p class=\"lead\">No flower photos yet. Add photos to your items in Square and they will appear here.</p>";
+  const list=document.getElementById("list");
+  list.innerHTML=items.map((f,i)=>`
+    <section class="item" data-i="${i}">
+      <div>
+        <h2>${esc(f.n)}</h2>
+        <p class="hint">Click the photo to move the focus spot.</p>
+        <div class="stage"><img src="${esc(f.img)}" alt="${esc(f.n)}" draggable="false"><span class="dot"></span></div>
+      </div>
+      <div>
+        <div class="previews">
+          <div class="pv"><div style="aspect-ratio:4/5"><img src="${esc(f.img)}" alt=""></div><small>Phone</small></div>
+          <div class="pv"><div style="aspect-ratio:1/1"><img src="${esc(f.img)}" alt=""></div><small>Square</small></div>
+          <div class="pv"><div style="aspect-ratio:16/9"><img src="${esc(f.img)}" alt=""></div><small>Wide</small></div>
+        </div>
+        <div class="row"><span class="val"></span><button type="button" class="reset">Centre</button><span class="saved">Saved</span></div>
+      </div>
+    </section>`).join("");
+  function paint(sec){
+    const f=items[sec.dataset.i],p=pos(f),[x,y]=p.split(" ");
+    const d=sec.querySelector(".dot");d.style.left=x;d.style.top=y;
+    sec.querySelectorAll(".pv img").forEach(im=>im.style.objectPosition=p);
+    sec.querySelector(".val").textContent="Focus: "+p;
+  }
+  function code(){
+    const o={};items.forEach(f=>o[f.n]=pos(f));
+    document.getElementById("code").textContent='"focus": '+JSON.stringify(o,null,1).replace(/\n\s*/g," ");
+  }
+  function set(sec,p){
+    F[items[sec.dataset.i].n]=p;save(F);paint(sec);code();
+    const s=sec.querySelector(".saved");s.classList.add("on");clearTimeout(s._t);s._t=setTimeout(()=>s.classList.remove("on"),1200);
+  }
+  document.querySelectorAll(".item").forEach(sec=>{
+    paint(sec);
+    const st=sec.querySelector(".stage");
+    const pick=e=>{const r=st.getBoundingClientRect();
+      const x=Math.round(Math.min(100,Math.max(0,(e.clientX-r.left)/r.width*100)));
+      const y=Math.round(Math.min(100,Math.max(0,(e.clientY-r.top)/r.height*100)));
+      set(sec,x+"% "+y+"%")};
+    let down=false;
+    st.addEventListener("pointerdown",e=>{down=true;st.setPointerCapture(e.pointerId);pick(e)});
+    st.addEventListener("pointermove",e=>{if(down)pick(e)});
+    st.addEventListener("pointerup",()=>down=false);
+    sec.querySelector(".reset").addEventListener("click",()=>set(sec,"50% 50%"));
+  });
+  code();
+  document.getElementById("copy").addEventListener("click",async e=>{
+    try{await navigator.clipboard.writeText(document.getElementById("code").textContent);e.target.textContent="Copied"}catch(err){e.target.textContent="Select and copy"}
+    setTimeout(()=>e.target.textContent="Copy settings",1500)});
+})();
+</script>
+</body>
+</html>

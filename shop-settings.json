@@ -13,6 +13,12 @@
     "dates": [],
     "orderAheadDays": 1
   },
+  "focus": {
+    "_how": "Photo focus spots, by Square item name, as \"across% down%\" (50% 50% is the centre). The site keeps this spot in view however it crops the photo. Pick them by clicking the photo at /focus.html, then copy the line it gives you into here.",
+    "Holiday Centerpiece": "50% 50%",
+    "Holiday Bowl": "50% 50%",
+    "Holiday Wrap": "50% 50%"
+  },
   "tags": {
     "Lavender Honey Latte": "House",
     "Rose Cardamom Latte": "House",

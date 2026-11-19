@@ -1,0 +1,90 @@
+/* =====================================================================
+   Studio Seven theme: door-green trim on cream beadboard, Work Sans throughout.
+   Door green sampled from the storefront photo; brick from the facade.
+   ===================================================================== */
+:root{
+  --door:#6b6a1d;        /* front door + beam, in daylight */
+  --door-deep:#4a4914;   /* door in shade */
+  --door-pale:#e6e4c4;   /* door green washed into cream */
+  --facade:#a4573f;      /* the brick */
+}
+/* No eyebrows over headings or menus */
+.kicker{display:none!important}
+
+
+/* =========== Door trim: cream walls, door green on every painted detail =========== */
+:root{--btn:var(--door);--hero-btn:var(--door);--pop:var(--door);--pop-hero:var(--door);--stamp:var(--door);--stamp-ink:#f6f1df}
+.hero h1 em{color:var(--facade)}
+.bag{background:var(--facade);box-shadow:inset 0 0 0 3px var(--facade),inset 0 0 0 4px rgba(250,246,236,.45)}
+.top{box-shadow:0 1px 0 rgba(92,74,38,.28),0 4px 0 var(--trim),0 5px 0 var(--door),0 8px 0 var(--door),0 10px 12px -6px rgba(60,58,10,.35)}
+.band.brick{background-color:var(--door)}
+.band.brick .btn{color:var(--door-deep)}
+.shopall,.cartpic span{background:var(--door)}
+.tile .flag{background:var(--door)}
+.ribbon{background:var(--door)}
+.orn{color:var(--door)}
+/* =========== Single lines only (no double rules or inset second borders) =========== */
+.top{box-shadow:0 3px 0 var(--door),0 8px 12px -6px rgba(60,58,10,.3)}
+.btn,.hero .btn{box-shadow:none}
+.btn.out,.hero .btn.out{box-shadow:none;border-width:1.5px}
+.bag{box-shadow:none}
+.band.brick .btn{box-shadow:none}
+.shopall,.cartpic span{box-shadow:0 6px 14px rgba(37,70,65,.18)}
+.topnav a[aria-current="page"]::after{height:0;border-bottom:0;border-top:2px solid currentColor}
+.nav a[aria-current="page"]{box-shadow:inset 0 -2px 0 currentColor}
+/* trim: one solid painted moulding instead of stacked lines */
+.hero::after,.page-h::after{height:14px;background:var(--trim);box-shadow:0 1px 0 rgba(92,74,38,.25),0 6px 10px -6px rgba(92,74,38,.35)}
+.rail.base{height:14px;background:var(--trim);box-shadow:0 -1px 0 rgba(92,74,38,.22)}
+.ribbon{box-shadow:none}
+/* frames and panels: one line */
+.collage .cl{box-shadow:inset 0 0 0 1px rgba(92,74,38,.25),0 8px 16px -10px rgba(92,74,38,.45)}
+.cl span{box-shadow:none}
+.tile .pic{padding:0;box-shadow:0 0 0 1px rgba(92,74,38,.25),0 10px 18px -12px rgba(92,74,38,.5)}
+.tile .pic::after{display:none}
+.tile .flag{left:10px;top:10px}
+.aside{box-shadow:inset 0 0 0 1px rgba(92,74,38,.25)}
+.cartpic{box-shadow:inset 0 0 0 1px rgba(92,74,38,.25),0 10px 20px -12px rgba(92,74,38,.5)}
+.cartpic span{left:14px;bottom:14px}
+@media (min-width:900px){.notes div{box-shadow:none;border-top:1.5px solid var(--forest)}}
+
+/* =========== Type: Work Sans throughout, no serifs =========== */
+:root{--display:"Work Sans",system-ui,sans-serif;--sc:"Work Sans",system-ui,sans-serif;--body:"Work Sans",system-ui,sans-serif}
+body{font-size:16px;line-height:1.6}
+h1,h2,h3{font-weight:600;letter-spacing:-.03em;line-height:1.02}
+.hero h1{font-size:clamp(2.9rem,12vw,4.4rem)}
+.page-h h1{font-size:clamp(2.7rem,11vw,3.8rem)}
+.sh h2{font-size:2.3rem}
+.hero h1 em,.it{font-style:normal;font-weight:600}
+.page-h p,.hero p,.sh p{font-size:1.06rem}
+.tile b,.drink .nm,.dish .nm,.line b,.aside b{font-weight:600;letter-spacing:-.015em}
+.tile b{font-size:1.12rem}
+.drink .nm,.dish .nm{font-size:1.12rem}
+.menu h2{font-size:1.7rem}
+.aside b{font-size:1.2rem}
+.cl span{font-size:.98rem;font-weight:600;letter-spacing:-.01em}
+.shopall,.cartpic span{font-style:normal;font-weight:600;font-size:1rem}
+.notes dt,.foot span,.ribbon span,.tile .flag,.tagx{font-weight:600;text-transform:uppercase;letter-spacing:.12em;font-size:.72rem}
+.ribbon span{font-size:.78rem}
+.foot span{font-size:.76rem}
+.topnav a,.nav a{font-variant:normal!important;letter-spacing:0!important;font-size:.95rem!important;font-weight:500}
+.topnav a[aria-current="page"]{font-weight:600}
+@media (min-width:900px){
+  .hero h1{font-size:clamp(3.6rem,5vw,4.6rem)}
+  .page-h h1{font-size:4.6rem}
+  .sh h2{font-size:3rem}
+  .band.cart2 h2,.cart2 h2{font-size:2.6rem!important}
+}
+
+/* =========== One colour grade for every product photo =========== */
+/* Warm, soft and slightly muted, to sit with the cream walls. Applied to whatever image Square sends. */
+.tile .pic img.photo,.sheet-pic{filter:sepia(.14) saturate(.88) contrast(.94) brightness(1.04)}
+
+.tile b,.drink .nm,.dish .nm,.line b,.cl span,.shopall,.cartpic span,.sheet-h h2{font-family:"Work Sans",system-ui,sans-serif}
+
+/* =========== Headings: Work Sans light =========== */
+:root{--display:"Work Sans",system-ui,sans-serif}
+h1,h2,h3{font-family:var(--display);font-weight:300;letter-spacing:-.035em}
+.hero h1 em,.it{font-weight:300}
+.aside b,.menu h2{font-weight:400;letter-spacing:-.02em}
+.foot .staff{font-size:.8rem;color:#3d5149;margin-left:auto;text-decoration:underline;text-underline-offset:3px}
+.cats{margin-top:10px}
