@@ -37,7 +37,7 @@ const isXmas=i=>!!(XMAS&&i&&i.xmas);
 const save=()=>{store.set("cart3",cart);$("#cartN").textContent=cart.reduce((a,l)=>a+l.q,0)};
 
 /* ---------- ROUTING ---------- */
-const VIEWS=["home","coffee","flowers"];
+const VIEWS=["home","coffee","flowers","holiday"];
 const TITLE=document.title;
 function route(){
   const raw=(location.hash||"#home").slice(1);
@@ -47,7 +47,7 @@ function route(){
   document.title=prod?`${prod.n} · ${TITLE}`:TITLE;
   if(prod)openProduct(prod);
   $$("[data-view]").forEach(v=>v.hidden=v.dataset.view!==h);
-  $$("[data-tab]").forEach(a=>{if(a.dataset.tab===(h==="product"?"flowers":h))a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
+  $$("[data-tab]").forEach(a=>{if(a.dataset.tab===(h==="product"||h==="holiday"?"flowers":h))a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
   if(raw==="cart-booking")$("#cart-booking").scrollIntoView({behavior:"smooth"});else window.scrollTo(0,0);
 }
 window.addEventListener("hashchange",route);
@@ -63,17 +63,15 @@ const gallery=i=>`<div class="gallery"><div class="g-track">${i.imgs.map((u,k)=>
 document.addEventListener("click",e=>{const b=e.target.closest("[data-g]");if(!b)return;const t=b.closest(".gallery").querySelector(".g-track");t.scrollTo({left:+b.dataset.g*t.clientWidth,behavior:"smooth"})});
 document.addEventListener("scroll",e=>{const t=e.target;if(!t.classList||!t.classList.contains("g-track"))return;const k=Math.round(t.scrollLeft/t.clientWidth);t.parentNode.querySelectorAll("[data-g]").forEach(b=>{if(+b.dataset.g===k)b.setAttribute("aria-current","true");else b.removeAttribute("aria-current")})},true);
 
-/* hero photo: the signature wrap (Holiday Wrap), else the first flower with a photo */
-const heroF=FLOWERS.find(f=>f.img&&/signature/i.test(f.n+" "+(f.tag||"")))||FLOWERS.find(f=>f.img&&/\bwrap\b/i.test(f.n))||FLOWERS.find(f=>f.img&&!f.out);
-/* puts an item's photo into a hero tile, linked to its page */
-const photoTile=(sel,f,label)=>{const c=$(sel);c.href=`#p/${encodeURIComponent(f.id)}`;c.classList.add("has-photo");c.innerHTML=`<img class="photo" src="${esc(f.img)}" style="object-position:${esc(f.focus||"50% 50%")}" alt="${esc(f.n)}"><span>${esc(label||f.n)}</span>`};
-/* Pre-orders tile: a fixed shop photo (public/img/preorder.webp), linked to the Holiday Bowl page when it's on the menu */
-const bowlF=FLOWERS.find(f=>/holiday bowl/i.test(f.n));
-photoTile(".collage .c3",{id:null,n:"Christmas pre-order flowers",img:"/img/preorder.webp",focus:"50% 45%"},"Pre-orders");
-if(!bowlF)$(".collage .c3").href="#flowers";else $(".collage .c3").href=`#p/${encodeURIComponent(bowlF.id)}`;
-/* the big hero tile uses a fixed shop photo (public/img/signature-wrap.webp), linked to the wrap's page when it's on the menu */
-photoTile(".collage .c1",{id:heroF&&/signature|wrap/i.test(heroF.n)?heroF.id:null,n:heroF&&/signature|wrap/i.test(heroF.n)?heroF.n:"Signature wrap",img:"/img/signature-wrap.webp",focus:"50% 45%"});
-if(!(heroF&&/signature|wrap/i.test(heroF.n)))$(".collage .c1").href="#flowers";
+/* hero tiles with the shop's own photos (public/img/): the wrap opens all flowers, Pre-orders opens the holiday page */
+const photoTile=(sel,img,alt,label,href)=>{const c=$(sel);c.href=href;c.classList.add("has-photo");c.innerHTML=`<img class="photo" src="${img}" style="object-position:50% 45%" alt="${esc(alt)}"><span>${esc(label)}</span>`};
+photoTile(".collage .c1","/img/signature-wrap.webp","Signature wrap bouquet","Signature wrap","#flowers");
+photoTile(".collage .c3","/img/preorder.webp","Christmas pre-order flowers","Pre-orders","#holiday");
+
+/* holiday page: the Christmas items from shop-settings.json, plus anything named "Holiday" */
+const HOLIDAY=FLOWERS.filter(f=>f.xmas||/holiday/i.test(f.n));
+$("#holidayTiles").innerHTML=HOLIDAY.map(tile).join("");
+if(!HOLIDAY.length)$("#holidayTiles").insertAdjacentHTML("beforebegin",'<p class="empty">Holiday flowers are coming soon.</p>');
 $("#featTiles").innerHTML=FLOWERS.filter(f=>!f.out).slice(0,4).map(tile).join("");
 if(!FLOWERS.length)$("#flowerTiles").insertAdjacentHTML("beforebegin",'<p class="empty">Flowers are coming soon.</p>');
 $("#flowerTiles").innerHTML=FLOWERS.map(tile).join("");
