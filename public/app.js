@@ -58,6 +58,9 @@ $("#ribbon").innerHTML=once+once+once+once;
 
 /* ---------- TILES ---------- */
 const tile=(f,i)=>`<a class="tile" href="#p/${encodeURIComponent(f.id)}"><span class="pic">${f.out?`<span class="flag out">Sold out</span>`:f.tag?`<span class="flag">${esc(f.tag)}</span>`:isXmas(f)?`<span class="flag">Christmas</span>`:""}${f.img?`<img class="photo" src="${esc(f.img)}" style="object-position:${esc(f.focus||"50% 50%")}" alt="" loading="lazy">`:`<img src="${i%4===0||i%4===3?SPRIGF:SPRIG}" alt="">`}</span><b>${esc(f.n)}</b><span class="pr">${fromP(f).replace(/\.00$/,"")}</span></a>`;
+/* hero photo: the signature wrap (Holiday Wrap), else the first flower with a photo */
+const heroF=FLOWERS.find(f=>f.img&&/signature/i.test(f.n+" "+(f.tag||"")))||FLOWERS.find(f=>f.img&&/\bwrap\b/i.test(f.n))||FLOWERS.find(f=>f.img&&!f.out);
+if(heroF){const c1=$(".collage .c1");c1.href=`#p/${encodeURIComponent(heroF.id)}`;c1.classList.add("has-photo");c1.innerHTML=`<img class="photo" src="${esc(heroF.img)}" style="object-position:${esc(heroF.focus||"50% 50%")}" alt="${esc(heroF.n)}"><span>${esc(heroF.n)}</span>`}
 $("#featTiles").innerHTML=FLOWERS.filter(f=>!f.out).slice(0,4).map(tile).join("");
 if(!FLOWERS.length)$("#flowerTiles").insertAdjacentHTML("beforebegin",'<p class="empty">Flowers are coming soon.</p>');
 $("#flowerTiles").innerHTML=FLOWERS.map(tile).join("");

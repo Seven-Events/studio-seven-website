@@ -108,3 +108,8 @@ a.tile{text-decoration:none;color:inherit}
   .pdp-more{margin-top:64px}
   .pdp-more .tiles{grid-template-columns:repeat(3,1fr)}
 }
+
+/* =========== Home hero: the signature wrap photo in the big tile =========== */
+.collage .cl.has-photo{padding:0;box-shadow:0 0 0 1px rgba(92,74,38,.25),0 10px 20px -12px rgba(92,74,38,.55)}
+.collage .cl.has-photo img.photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:none;opacity:1;right:auto;top:auto}
+.collage .cl.has-photo span{margin:12px 14px}
