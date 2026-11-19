@@ -38,10 +38,16 @@ const save=()=>{store.set("cart3",cart);$("#cartN").textContent=cart.reduce((a,l
 
 /* ---------- ROUTING ---------- */
 const VIEWS=["home","coffee","flowers"];
+const TITLE=document.title;
 function route(){
-  const raw=(location.hash||"#home").slice(1), h=VIEWS.includes(raw)?raw:"home";
+  const raw=(location.hash||"#home").slice(1);
+  const prod=raw.startsWith("p/")?FLOWERS.find(f=>f.id===decodeURIComponent(raw.slice(2))):null;
+  const h=prod?"product":VIEWS.includes(raw)?raw:"home";
+  if($("#sheet").classList.contains("on")&&!paying)closeSheet();
+  document.title=prod?`${prod.n} · ${TITLE}`:TITLE;
+  if(prod)openProduct(prod);
   $$("[data-view]").forEach(v=>v.hidden=v.dataset.view!==h);
-  $$("[data-tab]").forEach(a=>{if(a.dataset.tab===h)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
+  $$("[data-tab]").forEach(a=>{if(a.dataset.tab===(h==="product"?"flowers":h))a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
   if(raw==="cart-booking")$("#cart-booking").scrollIntoView({behavior:"smooth"});else window.scrollTo(0,0);
 }
 window.addEventListener("hashchange",route);
@@ -51,11 +57,10 @@ const once=["Fresh flowers","Coffee bar","Mobile coffee cart","Downtown Omemee",
 $("#ribbon").innerHTML=once+once+once+once;
 
 /* ---------- TILES ---------- */
-const tile=(f,i)=>`<button class="tile" type="button" data-fid="${f.id}"><span class="pic">${f.out?`<span class="flag out">Sold out</span>`:f.tag?`<span class="flag">${esc(f.tag)}</span>`:isXmas(f)?`<span class="flag">Christmas</span>`:""}${f.img?`<img class="photo" src="${esc(f.img)}" style="object-position:${esc(f.focus||"50% 50%")}" alt="" loading="lazy">`:`<img src="${i%4===0||i%4===3?SPRIGF:SPRIG}" alt="">`}</span><b>${esc(f.n)}</b><span class="pr">${fromP(f).replace(/\.00$/,"")}</span></button>`;
+const tile=(f,i)=>`<a class="tile" href="#p/${encodeURIComponent(f.id)}"><span class="pic">${f.out?`<span class="flag out">Sold out</span>`:f.tag?`<span class="flag">${esc(f.tag)}</span>`:isXmas(f)?`<span class="flag">Christmas</span>`:""}${f.img?`<img class="photo" src="${esc(f.img)}" style="object-position:${esc(f.focus||"50% 50%")}" alt="" loading="lazy">`:`<img src="${i%4===0||i%4===3?SPRIGF:SPRIG}" alt="">`}</span><b>${esc(f.n)}</b><span class="pr">${fromP(f).replace(/\.00$/,"")}</span></a>`;
 $("#featTiles").innerHTML=FLOWERS.filter(f=>!f.out).slice(0,4).map(tile).join("");
 if(!FLOWERS.length)$("#flowerTiles").insertAdjacentHTML("beforebegin",'<p class="empty">Flowers are coming soon.</p>');
 $("#flowerTiles").innerHTML=FLOWERS.map(tile).join("");
-document.addEventListener("click",e=>{const b=e.target.closest("[data-fid]");if(b)openFlower(item(b.dataset.fid))});
 
 /* ---------- COFFEE ---------- */
 const priceLabel=i=>i.out?"Sold out":fromP(i);
@@ -73,12 +78,16 @@ document.addEventListener("click",e=>{const b=e.target.closest(".dish[data-id],.
 /* ---------- SHEET ---------- */
 let lastFocus=null;
 function openSheet(html){lastFocus=document.activeElement;$("#sheetBody").innerHTML=`<div class="grab"></div>`+html;$("#scrim").classList.add("on");$("#sheet").classList.add("on");$("#sheet").scrollTop=0;document.body.style.overflow="hidden";setTimeout(()=>{const f=$("#sheet .x");f&&f.focus({preventScroll:true})},60)}
+let pageMode=false;
+const body=()=>pageMode?$("#pBody"):$("#sheetBody");
+function show(html){if(pageMode)$("#pBody").innerHTML=html;else openSheet(html)}
+function added(msg){if(pageMode){toast(msg);openProduct(item(location.hash.slice(3)?decodeURIComponent(location.hash.slice(3)):""))}else{closeSheet();toast(msg)}}
 function closeSheet(){$("#scrim").classList.remove("on");$("#sheet").classList.remove("on");document.body.style.overflow="";destroyPayments();lastFocus&&lastFocus.focus&&lastFocus.focus({preventScroll:true})}
 $("#scrim").addEventListener("click",()=>{if(!paying)closeSheet()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!paying)closeSheet()});
 $("#sheet").addEventListener("click",e=>{if(e.target.closest("[data-close]")&&!paying)closeSheet()});
 const pic=i=>i.img?`<img class="sheet-pic" src="${esc(i.img)}" style="object-position:${esc(i.focus||"50% 50%")}" alt="">`:"";
-const head=(t,sub)=>`<div class="sheet-h"><div><h2 id="sheetTitle">${t}</h2>${sub?`<p>${sub}</p>`:""}</div><button class="x" type="button" data-close aria-label="Close">×</button></div>`;
+const head=(t,sub,price)=>`<div class="sheet-h"><div>${pageMode?`<h1>${t}</h1>`:`<h2 id="sheetTitle">${t}</h2>`}${pageMode&&price?`<p class="pdp-price">${price}</p>`:""}${sub?`<p>${sub}</p>`:""}</div>${pageMode?"":`<button class="x" type="button" data-close aria-label="Close">×</button>`}</div>`;
 const choice=(name,opts,sel=0,key=name)=>`<div class="field"><span class="legend">${esc(name)}</span><div class="choice${opts.length>5?" many":""}" data-seg="${esc(key)}">${opts.map((o,i)=>`<button type="button" aria-pressed="${i===sel}" data-i="${i}"${o.off?" disabled":""}>${esc(o.n)}${o.d?`<small>+${money(o.d)}</small>`:""}${o.off?`<small>Sold out</small>`:""}</button>`).join("")}</div></div>`;
 function wire(root,cb){root.querySelectorAll("[data-seg]").forEach(g=>g.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.disabled)return;g.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));cb&&cb()}))}
 const val=(root,name)=>+root.querySelector(`[data-seg="${name}"] [aria-pressed="true"]`).dataset.i;
@@ -101,31 +110,39 @@ const addBtn=i=>i.out?`<button class="btn block" type="button" disabled>Sold out
 
 function openDrink(d){
   const extra=d.v.length>1||d.mods.length;
-  openSheet(pic(d)+head(esc(d.n),esc(d.d))+(d.out?"":sizeHtml(d)+modsHtml(d)+
+  pageMode=false;
+  show(pic(d)+head(esc(d.n),esc(d.d))+(d.out?"":sizeHtml(d)+modsHtml(d)+
     (extra?`<div class="field"><label for="dNote">Note for the barista</label><input type="text" id="dNote" maxlength="140" placeholder="Extra hot, half sweet…"></div>`:"")+qtyHtml)+addBtn(d));
   if(d.out)return;
-  const root=$("#sheetBody");let q=1;
+  const root=body();let q=1;
   const line=()=>({id:d.id,...readSel(root,d),note:($("#dNote")&&$("#dNote").value.trim())||"",q});
   const upd=()=>{$("#q").textContent=q;$("#addBtn").textContent=`Add to order · ${money(describe(line()).unit*q)}`};
   wire(root,upd);wireMulti(root,d,upd);
   root.querySelectorAll("[data-q]").forEach(b=>b.addEventListener("click",()=>{q=Math.max(1,Math.min(20,q+ +b.dataset.q));upd()}));upd();
-  $("#addBtn").addEventListener("click",()=>{cart.push(line());save();closeSheet();toast(`${d.n} added to your order`)});
+  $("#addBtn").addEventListener("click",()=>{cart.push(line());save();added(`${d.n} added to your order`)});
 }
 
 function openFlower(f){
   const x=isXmas(f),closed=x&&!xmasOpen().length;
-  if(closed){openSheet(pic(f)+head(esc(f.n),esc(f.d))+`<p class="fine">Christmas orders are closed. Please call the shop and we'll see what we can do.</p><button class="btn block" type="button" disabled>Christmas orders closed</button>`);return}
-  openSheet(pic(f)+head(esc(f.n),esc(f.d))+(f.out?addBtn(f):sizeHtml(f,true)+modsHtml(f)+
+  if(closed){show(pic(f)+head(esc(f.n),esc(f.d),fromP(f).replace(/\.00$/,""))+`<p class="fine">Christmas orders are closed. Please call the shop and we'll see what we can do.</p><button class="btn block" type="button" disabled>Christmas orders closed</button>`);return}
+  show(pic(f)+head(esc(f.n),esc(f.d),fromP(f).replace(/\.00$/,""))+(f.out?addBtn(f):sizeHtml(f,true)+modsHtml(f)+
     (x?`<p class="fine">A Christmas pre-order. You'll choose your pickup or delivery day at checkout: ${xmasOpen().map(fmtDay).map(esc).join(", ")}.</p>`:"")+
     `<div class="field"><label for="fOcc">What's it for?</label><select id="fOcc">${F.occasions.map((o,i)=>`<option value="${i}">${esc(o)}</option>`).join("")}</select></div>
     <div class="field"><label for="fCard">Card message</label><textarea id="fCard" maxlength="200" placeholder="Optional. We'll handwrite it."></textarea></div>`+
     qtyHtml+addBtn(f)));
   if(f.out)return;
-  const root=$("#sheetBody");let q=1;
+  const root=body();let q=1;
   const line=()=>({id:f.id,...readSel(root,f),occasion:+$("#fOcc").value,card:$("#fCard").value.trim(),q});
   const upd=()=>{$("#q").textContent=q;$("#addBtn").textContent=`${x?"Pre-order":"Add to order"} · ${money(describe(line()).unit*q)}`};
   wire(root,upd);wireMulti(root,f,upd);root.querySelectorAll("[data-q]").forEach(b=>b.addEventListener("click",()=>{q=Math.max(1,Math.min(10,q+ +b.dataset.q));upd()}));upd();
-  $("#addBtn").addEventListener("click",()=>{cart.push(line());save();closeSheet();toast(x?"Christmas pre-order added. Choose your day at checkout.":`${f.n} added to your order`)});
+  $("#addBtn").addEventListener("click",()=>{cart.push(line());save();added(x?"Christmas pre-order added. Choose your day at checkout.":`${f.n} added to your order`)});
+}
+
+function openProduct(f){
+  pageMode=true;
+  openFlower(f);
+  const more=FLOWERS.filter(x=>x.id!==f.id&&!x.out).slice(0,3);
+  $("#pMore").innerHTML=more.length?`<h2>More flowers</h2><div class="tiles">${more.map(tile).join("")}</div>`:"";
 }
 
 /* ---------- SQUARE PAYMENTS ---------- */
