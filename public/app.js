@@ -58,6 +58,11 @@ $("#ribbon").innerHTML=once+once+once+once;
 
 /* ---------- TILES ---------- */
 const tile=(f,i)=>`<a class="tile" href="#p/${encodeURIComponent(f.id)}"><span class="pic">${f.out?`<span class="flag out">Sold out</span>`:f.tag?`<span class="flag">${esc(f.tag)}</span>`:isXmas(f)?`<span class="flag">Christmas</span>`:""}${f.img?`<img class="photo" src="${esc(f.img)}" style="object-position:${esc(f.focus||"50% 50%")}" alt="" loading="lazy">`:`<img src="${i%4===0||i%4===3?SPRIGF:SPRIG}" alt="">`}</span><b>${esc(f.n)}</b><span class="pr">${fromP(f).replace(/\.00$/,"")}</span></a>`;
+/* product page photo gallery: swipe on phones, thumbnails underneath */
+const gallery=i=>`<div class="gallery"><div class="g-track">${i.imgs.map((u,k)=>`<img class="sheet-pic" src="${esc(u)}" style="object-position:${k?"50% 50%":esc(i.focus||"50% 50%")}" alt="${esc(i.n)}, photo ${k+1} of ${i.imgs.length}"${k?' loading="lazy"':""}>`).join("")}</div><div class="g-thumbs">${i.imgs.map((u,k)=>`<button type="button" data-g="${k}" aria-label="Show photo ${k+1}"${k?"":' aria-current="true"'}><img src="${esc(u)}" alt=""></button>`).join("")}</div></div>`;
+document.addEventListener("click",e=>{const b=e.target.closest("[data-g]");if(!b)return;const t=b.closest(".gallery").querySelector(".g-track");t.scrollTo({left:+b.dataset.g*t.clientWidth,behavior:"smooth"})});
+document.addEventListener("scroll",e=>{const t=e.target;if(!t.classList||!t.classList.contains("g-track"))return;const k=Math.round(t.scrollLeft/t.clientWidth);t.parentNode.querySelectorAll("[data-g]").forEach(b=>{if(+b.dataset.g===k)b.setAttribute("aria-current","true");else b.removeAttribute("aria-current")})},true);
+
 /* hero photo: the signature wrap (Holiday Wrap), else the first flower with a photo */
 const heroF=FLOWERS.find(f=>f.img&&/signature/i.test(f.n+" "+(f.tag||"")))||FLOWERS.find(f=>f.img&&/\bwrap\b/i.test(f.n))||FLOWERS.find(f=>f.img&&!f.out);
 /* puts an item's photo into a hero tile, linked to its page */
@@ -93,7 +98,7 @@ function closeSheet(){$("#scrim").classList.remove("on");$("#sheet").classList.r
 $("#scrim").addEventListener("click",()=>{if(!paying)closeSheet()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!paying)closeSheet()});
 $("#sheet").addEventListener("click",e=>{if(e.target.closest("[data-close]")&&!paying)closeSheet()});
-const pic=i=>i.img?`<img class="sheet-pic" src="${esc(i.img)}" style="object-position:${esc(i.focus||"50% 50%")}" alt="">`:"";
+const pic=i=>pageMode&&(i.imgs||[]).length>1?gallery(i):i.img?`<img class="sheet-pic" src="${esc(i.img)}" style="object-position:${esc(i.focus||"50% 50%")}" alt="">`:"";
 const head=(t,sub,price)=>`<div class="sheet-h"><div>${pageMode?`<h1>${t}</h1>`:`<h2 id="sheetTitle">${t}</h2>`}${pageMode&&price?`<p class="pdp-price">${price}</p>`:""}${sub?`<p>${sub}</p>`:""}</div>${pageMode?"":`<button class="x" type="button" data-close aria-label="Close">×</button>`}</div>`;
 const choice=(name,opts,sel=0,key=name)=>`<div class="field"><span class="legend">${esc(name)}</span><div class="choice${opts.length>5?" many":""}" data-seg="${esc(key)}">${opts.map((o,i)=>`<button type="button" aria-pressed="${i===sel}" data-i="${i}"${o.off?" disabled":""}>${esc(o.n)}${o.d?`<small>+${money(o.d)}</small>`:""}${o.off?`<small>Sold out</small>`:""}</button>`).join("")}</div></div>`;
 function wire(root,cb){root.querySelectorAll("[data-seg]").forEach(g=>g.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.disabled)return;g.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));cb&&cb()}))}
