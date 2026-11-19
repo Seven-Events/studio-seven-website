@@ -24,7 +24,7 @@ Customer's phone ──> Vercel (website in public/ + small functions in api/)
 
 | File | What it is |
 | --- | --- |
-| `shop-settings.json` | Which Square categories show on the website and in what order, plus HST, the delivery fee, flower occasions, pre-order window and little tags like "Bestseller". |
+| `shop-settings.json` | Which Square categories show on the website and in what order, plus HST, the delivery fee, flower occasions, pre-order window, Christmas pickup days and little tags like "Bestseller". |
 | `public/index.html` | The page itself: layout, colours and wording. |
 | `public/app.js` | What happens when people tap things: menu, order sheet, checkout, forms. |
 | `api/` | Vercel functions. They are thin wrappers around the code in `lib/`. |
@@ -79,7 +79,7 @@ Square's test card is `4111 1111 1111 1111`, with any future expiry date, any CV
 - In Square POS, turn on **new order alerts** in the order or notification settings so the iPad chimes. The exact menu name varies by app version.
 - *Optional:* add a kitchen ticket printer, or the **Square KDS** app on a second tablet for the bar, so tickets print or appear automatically.
 - Staff move each order to **In progress**, then **Ready**, then **Completed**. Check in Square whether the customer gets a "ready" text for your account type, and turn it on in Square Dashboard if it's available.
-- Flower pre-orders arrive the moment they're paid. Their date is shown as the scheduled pickup or delivery time, and "PRE-ORDER for YYYY-MM-DD" appears on each line.
+- Flower pre-orders arrive the moment they're paid. Their date is shown as the scheduled pickup or delivery time, and "PRE-ORDER for YYYY-MM-DD" (or "CHRISTMAS PRE-ORDER for YYYY-MM-DD") appears on each flower line.
 
 ### 5. Test, then go live
 
@@ -122,13 +122,15 @@ Items in any other category (for example "Merch" or staff-only items) stay in-st
 ## Everyday changes
 
 - **Change the menu, prices, photos or stock:** do it in Square, as above.
+- **Set the Christmas pickup and delivery days:** in `shop-settings.json`, under `christmas`, put the days in `dates` as year-month-day, for example `"dates": ["2026-12-20", "2026-12-23"]`, and commit the change (or ask Claude to). `items` lists the Christmas-only items by their exact Square name. While `dates` is empty, those items sell like any other flowers. Once it has days, the items show a "Christmas" tag and customers must pick one of those days at checkout, for pickup or delivery. Each day stops taking orders `orderAheadDays` before it (1 means order by the day before). When every day has passed, the items show "Christmas orders closed". Empty `dates` again after Christmas.
 - **Pause online orders** (before opening day, or on a slammed morning): set `ORDERS_OPEN` to `false` in Vercel and redeploy. The menu stays visible, but checkout explains that ordering is paused.
 
 ## How orders work
 
 - Coffee is pickup only, either as soon as possible (ready in about 10 minutes) or at a chosen time up to about 3.5 hours ahead.
-- Flowers can be picked up or delivered (a $12 fee, Omemee, Lindsay and nearby) and pre-ordered 2 to 60 days ahead.
-- An order with coffee and flowers is a single pickup. For flower delivery, customers order flowers separately, because each Square order holds one pickup or delivery.
+- Flowers can be picked up or delivered (a $12 fee, Omemee, Lindsay and nearby). At checkout, customers choose "Soonest" or pick a day 2 to 60 days ahead. One order has one date, because each Square order holds one pickup or delivery.
+- Orders with Christmas items must be for one of the Christmas days (see "Everyday changes").
+- An order with coffee and flowers is a single pickup today. To have flowers delivered or pre-order them for another day, customers order the flowers separately.
 - HST (13%) is added to each order, and Square calculates the total, so the amount charged always matches Square's own calculation.
 - An order is refused if an item sold out or was removed in Square since the customer opened the page.
 
