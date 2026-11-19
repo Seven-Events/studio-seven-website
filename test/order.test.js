@@ -89,9 +89,10 @@ test("scheduled coffee time must be within 4 hours", () => {
 
 test("flower delivery adds the fee and schedules for the pre-order date at noon shop time", () => {
   const date = inDays(5);
-  const o = buildSquareOrder({ cart: [{ id: "I_market", v: "V_market_0", q: 1 }], customer: cust, fulfillment: { flowers: "delivery", address: "12 King St E, Omemee", date }, menu, locationId: "L1", now: NOW });
+  const o = buildSquareOrder({ cart: [{ id: "I_market", v: "V_market_0", q: 1 }], customer: cust, fulfillment: { flowers: "delivery", address: "12 King St E, Omemee", date }, menu, delivery: { km: 20.1, fee: 2513 }, locationId: "L1", now: NOW });
   assert.equal(o.fulfillments[0].type, "DELIVERY");
-  assert.equal(o.service_charges[0].amount_money.amount, 1200);
+  assert.equal(o.service_charges[0].amount_money.amount, 2513);
+  assert.equal(o.service_charges[0].name, "Flower delivery (20.1 km)");
   assert.equal(o.fulfillments[0].delivery_details.deliver_at, `${date}T16:00:00.000Z`); // noon EDT
 });
 
@@ -99,6 +100,7 @@ test("coffee can't be delivered, and delivery needs an address and phone", () =>
   const mixed = [{ id: "I_market", v: "V_market_0", q: 1 }, latte];
   assert.throws(() => buildSquareOrder({ cart: mixed, customer: cust, fulfillment: { flowers: "delivery", address: "12 King St" }, menu, locationId: "L1", now: NOW }), /pickup only/);
   assert.throws(() => buildSquareOrder({ cart: [mixed[0]], customer: cust, fulfillment: { flowers: "delivery" }, menu, locationId: "L1", now: NOW }), /address/);
+  assert.throws(() => buildSquareOrder({ cart: [mixed[0]], customer: cust, fulfillment: { flowers: "delivery", address: "12 King St" }, menu, locationId: "L1", now: NOW }), /delivery cost/);
   assert.throws(() => buildSquareOrder({ cart: [mixed[0]], customer: { name: "Sam", phone: "555" }, fulfillment: {}, menu, locationId: "L1", now: NOW }), /10-digit/);
 });
 
@@ -110,7 +112,7 @@ test("winter pre-orders use standard time", () => {
 // Christmas: "Bud Vase Trio" stands in for a holiday item, with two pickup/delivery days set.
 const XNOW = new Date("2027-12-15T15:00:00Z"); // Dec 15, 10:00 in Omemee
 const xmasMenu = (dates, orderAheadDays = 1) => buildMenu(fx.objects, fx.counts, "L1", { ...settings, christmas: { items: ["bud vase trio"], dates, orderAheadDays } });
-const xorder = (m, fulfillment, cart = [{ id: "I_bud", q: 1 }]) => buildSquareOrder({ cart, customer: cust, fulfillment: { flowers: "pickup", ...fulfillment }, menu: m, locationId: "L1", now: XNOW });
+const xorder = (m, fulfillment, cart = [{ id: "I_bud", q: 1 }]) => buildSquareOrder({ cart, customer: cust, fulfillment: { flowers: "pickup", ...fulfillment }, menu: m, delivery: { km: 5, fee: 625 }, locationId: "L1", now: XNOW });
 
 test("with no Christmas days set, holiday items sell like any other flowers", () => {
   const m = xmasMenu([]);

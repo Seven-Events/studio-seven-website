@@ -34,6 +34,16 @@ function day(days){const d=new Date();d.setDate(d.getDate()+days);return d.toLoc
 const XMAS=F.christmas;
 const xmasOpen=()=>XMAS?XMAS.dates.filter(d=>d>=day(XMAS.orderAheadDays)):[];
 const isXmas=i=>!!(XMAS&&i&&i.xmas);
+/* Closed days and no-delivery days (set by staff at /admin.html, saved in Square). The server checks these too. */
+const SCH=Object.assign({c:[],d:[],cw:[],dw:[]},M.schedule||{});
+function dayInfo(d){const wd=new Date(d+"T12:00").getDay(),hit=l=>l.find(r=>d>=r[0]&&d<=r[1]);
+  const c=hit(SCH.c);if(c||SCH.cw.includes(wd))return{closed:true,nod:true,note:c&&c[2]||""};
+  const n=hit(SCH.d);if(n||SCH.dw.includes(wd))return{closed:false,nod:true,note:n&&n[2]||""};
+  return{closed:false,nod:false,note:""}}
+const dayBlocked=(d,deliver)=>{const s=dayInfo(d);return s.closed||(deliver&&s.nod)};
+function dayOptions(list,deliver,sel){return `<option value="">Choose a day</option>`+list.map(d=>{const s=dayInfo(d),off=s.closed||(deliver&&s.nod),
+  tag=s.closed?"closed":off?"no deliveries":"";return `<option value="${d}"${off?" disabled":""}${d===sel&&!off?" selected":""}>${esc(fmtDay(d))}${tag?` (${tag}${s.note?": "+esc(s.note):""})`:""}</option>`}).join("")}
+const dayRange=(a,b)=>{const out=[];for(let i=a;i<=b;i++)out.push(day(i));return out};
 const save=()=>{store.set("cart3",cart);$("#cartN").textContent=cart.reduce((a,l)=>a+l.q,0)};
 
 /* ---------- ROUTING ---------- */
@@ -102,7 +112,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!paying)closeSheet(
 $("#sheet").addEventListener("click",e=>{if(e.target.closest("[data-close]")&&!paying)closeSheet()});
 const pic=i=>pageMode&&(i.imgs||[]).length>1?gallery(i):i.img?`<img class="sheet-pic" src="${esc(i.img)}" style="object-position:${esc(i.focus||"50% 50%")}" alt="">`:"";
 const head=(t,sub,price)=>`<div class="sheet-h"><div>${pageMode?`<h1>${t}</h1>`:`<h2 id="sheetTitle">${t}</h2>`}${pageMode&&price?`<p class="pdp-price">${price}</p>`:""}${sub?`<p>${sub}</p>`:""}</div>${pageMode?"":`<button class="x" type="button" data-close aria-label="Close">×</button>`}</div>`;
-const choice=(name,opts,sel=0,key=name)=>`<div class="field"><span class="legend">${esc(name)}</span><div class="choice${opts.length>5?" many":""}" data-seg="${esc(key)}">${opts.map((o,i)=>`<button type="button" aria-pressed="${i===sel}" data-i="${i}"${o.off?" disabled":""}>${esc(o.n)}${o.d?`<small>+${money(o.d)}</small>`:""}${o.off?`<small>Sold out</small>`:""}</button>`).join("")}</div></div>`;
+const choice=(name,opts,sel=0,key=name)=>`<div class="field"><span class="legend">${esc(name)}</span><div class="choice${opts.length>5?" many":""}" data-seg="${esc(key)}">${opts.map((o,i)=>`<button type="button" aria-pressed="${i===sel}" data-i="${i}"${o.off?" disabled":""}>${esc(o.n)}${o.d?`<small>+${money(o.d)}</small>`:""}${o.s?`<small>${esc(o.s)}</small>`:""}${o.off?`<small>Sold out</small>`:""}</button>`).join("")}</div></div>`;
 function wire(root,cb){root.querySelectorAll("[data-seg]").forEach(g=>g.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.disabled)return;g.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));cb&&cb()}))}
 const val=(root,name)=>+root.querySelector(`[data-seg="${name}"] [aria-pressed="true"]`).dataset.i;
 const qtyHtml=`<div class="field"><span class="legend">How many</span><div class="qty"><button type="button" data-q="-1" aria-label="One fewer">−</button><output id="q">1</output><button type="button" data-q="1" aria-label="One more">+</button></div></div>`;
@@ -167,7 +177,10 @@ function loadSquare(env){return new Promise((res,rej)=>{if(window.Square)return 
 function destroyPayments(){payMethods.forEach(m=>{try{m.destroy()}catch(e){}});payMethods=[]}
 
 function times(){const out=[],t=new Date();t.setMinutes(Math.ceil((t.getMinutes()+15)/5)*5,0,0);for(let i=0;i<14;i++){out.push({iso:t.toISOString(),label:t.toLocaleTimeString("en-CA",{hour:"numeric",minute:"2-digit"})});t.setMinutes(t.getMinutes()+15)}return out}
-function totals(deliver){const s=cart.reduce((a,l)=>a+describe(l).unit*l.q,0),d=deliver?M.deliveryFee:0,t=Math.round((s+d)*Number(M.taxPercent)/100);return{s,d,t,a:s+d+t}}
+/* Delivery is priced per km of driving from the shop (api/delivery.js). DQ is the quote for the address typed in. */
+let DQ=null;
+const DL=M.delivery||{perKm:0,maxKm:0};
+function totals(deliver){const s=cart.reduce((a,l)=>a+describe(l).unit*l.q,0),d=deliver&&DQ&&DQ.fee?DQ.fee:0,t=Math.round((s+d)*Number(M.taxPercent)/100);return{s,d,t,a:s+d+t}}
 
 function openCart(){
   if(!cart.length){openSheet(head("Your order")+`<p class="empty">Nothing in here yet.</p><div class="btns"><a class="btn out" href="#coffee" data-close>Coffee</a><a class="btn out" href="#flowers" data-close>Flowers</a></div>`);return}
@@ -176,12 +189,13 @@ function openCart(){
   const draft=store.get("me",{});
   // Flowers on their own can be for a later day: one of the Christmas days if the order has Christmas items, otherwise soonest or any day in the pre-order window.
   const whenHtml=!hasF||hasC?"":hasX
-    ?`<div class="field"><label for="cDay">Christmas pickup or delivery day</label><select id="cDay"><option value="">Choose a day</option>${xd.map(d=>`<option value="${d}">${esc(fmtDay(d))}</option>`).join("")}</select><small>We'll have your flowers ready that day and text you the day before.</small></div>`
-    :choice("When",[{n:"Soonest",d:0},{n:"Pick a day",d:0}])+`<div class="field" id="dateF" hidden><label for="cDate">Date</label><input type="date" id="cDate" min="${day(F.preorderMinDays)}" max="${day(F.preorderMaxDays)}" value="${day(7)}"><small>We'll hold your flowers and text you the day before.</small></div>`;
+    ?`<div class="field"><label for="cDay">Christmas pickup or delivery day</label><select id="cDay">${dayOptions(xd,false)}</select><small>We'll have your flowers ready that day and text you the day before.</small></div>`
+    :choice("When",[{n:"Soonest",d:0},{n:"Pick a day",d:0}])+`<div class="field" id="dateF" hidden><label for="cDate">Day</label><select id="cDate">${dayOptions(dayRange(F.preorderMinDays,F.preorderMaxDays),false)}</select><small>We'll hold your flowers and text you the day before.</small></div>`;
   openSheet(head("Your order")+
     `<div>${cart.map((l,i)=>{const x=describe(l);return `<div class="line"><b>${l.q} × ${esc(x.n)}</b><span class="p">${money(x.unit*l.q)}</span><small>${esc(x.opts)}</small><button class="link rm" type="button" data-rm="${i}">Remove</button></div>`}).join("")}</div>`+
-    (hasF&&!hasC?choice("Flowers",[{n:"I'll pick up",d:0},{n:"Deliver them",d:M.deliveryFee}])+`<div class="field" id="addrF" hidden><label for="cAddr">Delivery address</label><input type="text" id="cAddr" autocomplete="street-address" placeholder="Street and town" value="${esc(draft.addr||"")}"><small>Omemee, Lindsay and nearby.</small></div>`+whenHtml:"")+
+    (hasF&&!hasC?choice("Flowers",[{n:"I'll pick up",d:0},{n:"Deliver them",d:0,s:`${money(DL.perKm)}/km`}])+`<div class="field" id="addrF" hidden><label for="cAddr">Delivery address</label><input type="text" id="cAddr" autocomplete="street-address" placeholder="Street, town and postal code" value="${esc(draft.addr||"")}"><small id="addrQ" aria-live="polite">${money(DL.perKm)} per km of driving from the shop, up to ${DL.maxKm} km.</small></div>`+whenHtml:"")+
     (hasF&&hasC?(hasX?`<p class="fine">Christmas flowers are for a later day, so they need their own order. Please remove the coffee or the Christmas flowers and order them separately.</p>`:`<p class="fine">Flowers in an order with coffee are picked up with it today. To pre-order flowers for another day, or have them delivered, order them on their own.</p>`):"")+
+    (hasC&&dayInfo(day(0)).closed?`<p class="fine">Sorry, we're closed today${dayInfo(day(0)).note?" ("+esc(dayInfo(day(0)).note)+")":""}, so we can't take coffee orders. See you when we're back!</p>`:"")+
     (hasC?`<div class="field"><label for="cTime">Coffee ready at</label><select id="cTime"><option value="asap">As soon as you can (about 10 min)</option>${times().map(t=>`<option value="${t.iso}">${t.label}</option>`).join("")}</select></div>`:"")+
     `<div class="row2"><div class="field"><label for="cName">Name</label><input type="text" id="cName" autocomplete="name" value="${esc(draft.name||"")}"></div><div class="field"><label for="cPhone">Mobile</label><input type="tel" id="cPhone" autocomplete="tel" inputmode="tel" value="${esc(draft.phone||"")}"></div></div>
     <span class="err" id="cErr" hidden></span>
@@ -194,10 +208,32 @@ function openCart(){
     <p class="fine" id="payNote">Card, Apple Pay and Google Pay, processed securely by Square.</p>`);
   const root=$("#sheetBody");
   const deliver=()=>hasF&&!hasC&&val(root,"Flowers")===1;
-  const fDate=()=>!hasF||hasC?null:hasX?($("#cDay").value||null):val(root,"When")===1?$("#cDate").value:null;
-  const upd=()=>{const t=totals(deliver());if($("#addrF"))$("#addrF").hidden=!deliver();if($("#dateF"))$("#dateF").hidden=val(root,"When")!==1;
-    $("#totals").innerHTML=`<div><span>Subtotal</span><span>${money(t.s)}</span></div>${t.d?`<div><span>Delivery</span><span>${money(t.d)}</span></div>`:""}<div><span>HST</span><span>${money(t.t)}</span></div><div class="grand"><span>Total</span><span>${money(t.a)}</span></div>`};
-  wire(root,()=>{upd();if(payMethods.length){destroyPayments();$("#payArea").hidden=true;$("#payBtn").textContent="Continue to payment"}});upd();
+  const fDate=()=>!hasF||hasC?null:hasX?($("#cDay").value||null):val(root,"When")===1?($("#cDate").value||null):null;
+  // Grey out closed days (and no-delivery days when delivering), and "Soonest" when today is one of them.
+  const days=()=>{const dv=deliver();
+    if($("#cDay")){const v=$("#cDay").value;$("#cDay").innerHTML=dayOptions(xd,dv,v)}
+    if($("#cDate")){const v=$("#cDate").value;$("#cDate").innerHTML=dayOptions(dayRange(F.preorderMinDays,F.preorderMaxDays),dv,v)}
+    const soon=root.querySelector('[data-seg="When"] [data-i="0"]');
+    if(soon){const ok=!dayBlocked(day(0),dv);soon.disabled=!ok;soon.innerHTML=ok?"Soonest":`Soonest<small>${dayInfo(day(0)).closed?"Closed today":"No deliveries today"}</small>`;
+      if(!ok&&soon.getAttribute("aria-pressed")==="true"){soon.setAttribute("aria-pressed","false");root.querySelector('[data-seg="When"] [data-i="1"]').setAttribute("aria-pressed","true")}}};
+  const upd=()=>{days();const t=totals(deliver());if($("#addrF"))$("#addrF").hidden=!deliver();if($("#dateF"))$("#dateF").hidden=val(root,"When")!==1;
+    $("#totals").innerHTML=`<div><span>Subtotal</span><span>${money(t.s)}</span></div>${deliver()?`<div><span>Delivery${t.d?` (${DQ.km} km)`:""}</span><span>${t.d?money(t.d):"Add address"}</span></div>`:""}<div><span>HST</span><span>${money(t.t)}</span></div><div class="grand"><span>Total</span><span>${money(t.a)}</span></div>`};
+  const resetPay=()=>{if(payMethods.length){destroyPayments();$("#payArea").hidden=true;$("#payBtn").textContent="Continue to payment"}};
+  wire(root,()=>{upd();resetPay();if(deliver())quote()});upd();
+  // Work out the delivery cost once the address is typed in.
+  const addrQ=$("#addrQ"),addrHint=addrQ&&addrQ.textContent;let qTimer=0;
+  async function quote(){const a=$("#cAddr")?$("#cAddr").value.trim():"";if(!deliver())return;
+    if(DQ&&DQ.addr===a){showQ();return}
+    if(a.length<8){DQ=null;addrQ.textContent=addrHint;addrQ.classList.remove("bad");upd();return}
+    DQ={addr:a,busy:true};addrQ.textContent="Working out the delivery cost…";addrQ.classList.remove("bad");upd();
+    try{const r=await fetch("/api/delivery",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({address:a})});const out=await r.json().catch(()=>({}));
+      if(!DQ||DQ.addr!==a)return;
+      DQ=r.ok?{addr:a,km:out.km,fee:out.fee,place:out.place}:{addr:a,error:out.error||"We couldn't work out the delivery cost. Please try again."}}
+    catch(e){if(DQ&&DQ.addr===a)DQ={addr:a,error:"We couldn't work out the delivery cost. Check your connection and try again."}}
+    showQ();upd();resetPay()}
+  function showQ(){if(!DQ||!addrQ)return;addrQ.classList.toggle("bad",!!DQ.error);
+    addrQ.textContent=DQ.error||(DQ.busy?"Working out the delivery cost…":`${DQ.km} km from the shop: ${money(DQ.fee)} delivery.${DQ.place?" We found "+DQ.place+".":""}`)}
+  if($("#cAddr")){$("#cAddr").addEventListener("input",()=>{clearTimeout(qTimer);qTimer=setTimeout(quote,900)});$("#cAddr").addEventListener("change",()=>{clearTimeout(qTimer);quote()})}
   root.querySelectorAll("[data-rm]").forEach(b=>b.addEventListener("click",()=>{cart.splice(+b.dataset.rm,1);save();openCart()}));
   const err=m=>{$("#cErr").textContent=m;$("#cErr").hidden=!m;if(m)$("#cErr").scrollIntoView({block:"center",behavior:"smooth"})};
 
@@ -207,9 +243,14 @@ function openCart(){
     if(!(digits.length===10||(digits.length===11&&digits[0]==="1"))){err("Please enter a 10-digit mobile number so we can text you.");$("#cPhone").focus();return null}
     const addr=$("#cAddr")?$("#cAddr").value.trim():"";
     if(deliver()&&addr.length<5){err("Please add the delivery address.");$("#cAddr").focus();return null}
+    if(deliver()&&!(DQ&&DQ.addr===addr&&DQ.fee!=null)){if(DQ&&DQ.addr===addr&&DQ.error)err(DQ.error);else{err("One moment, we're working out the delivery cost.");quote()}$("#cAddr").focus();return null}
     if(hasX&&hasC){err("Christmas flowers need their own order. Please remove the coffee or the Christmas flowers.");return null}
     if(hasX&&!xd.length){err("Christmas orders are closed. Please remove the Christmas flowers, or call the shop.");return null}
+    if(hasC&&dayInfo(day(0)).closed){err("Sorry, we're closed today, so we can't take coffee orders.");return null}
     const date=fDate();
+    if(hasF&&!hasC&&!hasX&&!date&&val(root,"When")===1){err("Please choose a day for your flowers.");$("#cDate").focus();return null}
+    if(date&&dayBlocked(date,deliver())){err(dayInfo(date).closed?"Sorry, we're closed that day. Please pick another day.":"Sorry, we're not delivering that day. Please pick another day, or choose pickup.");return null}
+    if(hasF&&!hasC&&!date&&dayBlocked(day(0),deliver())){err(dayInfo(day(0)).closed?"Sorry, we're closed today. Please pick a day for your flowers.":"Sorry, we're not delivering today. Please pick a day, or choose pickup.");return null}
     if(hasX&&!date){err("Please choose your Christmas pickup or delivery day.");$("#cDay").focus();return null}
     if(date&&!hasX&&!(date>=day(F.preorderMinDays)&&date<=day(F.preorderMaxDays))){err(`Please pick a date ${F.preorderMinDays} to ${F.preorderMaxDays} days from today.`);$("#cDate").focus();return null}
     store.set("me",{name,phone,addr});err("");

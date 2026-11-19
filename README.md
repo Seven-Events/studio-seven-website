@@ -24,7 +24,7 @@ Customer's phone ──> Vercel (website in public/ + small functions in api/)
 
 | File | What it is |
 | --- | --- |
-| `shop-settings.json` | Which Square categories show on the website and in what order, plus HST, the delivery fee, flower occasions, pre-order window, Christmas pickup days and little tags like "Bestseller". |
+| `shop-settings.json` | Which Square categories show on the website and in what order, plus HST, the shop's address and delivery rate, flower occasions, pre-order window, Christmas pickup days and little tags like "Bestseller". |
 | `public/index.html` | The page itself: layout, colours and wording. |
 | `public/app.js` | What happens when people tap things: menu, order sheet, checkout, forms. |
 | `api/` | Vercel functions. They are thin wrappers around the code in `lib/`. |
@@ -32,6 +32,8 @@ Customer's phone ──> Vercel (website in public/ + small functions in api/)
 | `lib/order.js` | Checks every order against the live Square menu. Orders use Square's own items, so Square sets the prices and nobody can change one in their browser. |
 | `lib/checkout.js` | Creates the Square order and charges the customer. |
 | `lib/signup.js` | Saves coffee cart requests to Square, and emails the shop. |
+| `lib/schedule.js` | Closed days, no-delivery days and the delivery rate from `/admin.html`, saved on the shop location in Square. |
+| `lib/delivery.js` | Works out the delivery cost from the driving distance to the customer's address. |
 | `test/` | Automated checks. Run `npm test`. |
 
 The code in `lib/` doesn't depend on Vercel, so a future staff admin (for example a Next.js app with a login) can reuse it directly.
@@ -70,7 +72,8 @@ Square's test card is `4111 1111 1111 1111`, with any future expiry date, any CV
 | `NOTIFY_EMAIL` | Where the shop wants the emails. To send to several people, separate the addresses with commas. |
 | `FROM_EMAIL` | *Optional, after verifying your domain:* `Studio Seven <website@yourdomain>` |
 | `ORDERS_OPEN` | `true` (set to `false` to pause online ordering) |
-| `STAFF_PASSWORD` | A password you choose for saving photo focus spots at `/focus.html` |
+| `STAFF_PASSWORD` | A password you choose for the staff pages: shop days at `/admin.html` and photo focus at `/focus.html` |
+| `GOOGLE_MAPS_API_KEY` | *Optional:* a Google Maps key with the Routes API turned on, for delivery distances. Without it the site uses free OpenStreetMap services (see "Delivery") |
 
 3. Redeploy so the variables take effect (**Deployments > ... > Redeploy**).
 
@@ -125,6 +128,9 @@ Capital letters don't matter, so "hot drinks" in Square works too, but the spell
 
 ## Everyday changes
 
+- **Closed days, holidays and no-delivery days:** open `/admin.html` on the website (bookmark it on your phone). It asks for the staff password the first time on each device. Pick **Closed** (no orders at all) or **No deliveries** (pickup still open), choose the day or the first and last day of a stretch, add a note customers will see if you like (for example "Christmas"), press **Add**, then **Save**. You can also set days you're closed or don't deliver every week. Checkout greys those days out, and the server refuses them too. When today is closed, coffee orders and "Soonest" flowers are switched off for the day. Days are saved on your shop location in Square, so there's nothing else to set up.
+- **Delivery rate and distance:** also on `/admin.html`, under **Delivery** (per km, and the furthest km you'll go). Press **Save**.
+
 - **Change the menu, prices, photos or stock:** do it in Square, as above.
 - **Set the Christmas pickup and delivery days:** in `shop-settings.json`, under `christmas`, put the days in `dates` as year-month-day, for example `"dates": ["2026-12-20", "2026-12-23"]`, and commit the change (or ask Claude to). `items` lists the Christmas-only items by their exact Square name. While `dates` is empty, those items sell like any other flowers. Once it has days, the items show a "Christmas" tag and customers must pick one of those days at checkout, for pickup or delivery. Each day stops taking orders `orderAheadDays` before it (1 means order by the day before). When every day has passed, the items show "Christmas orders closed". Empty `dates` again after Christmas.
 - **Pause online orders** (before opening day, or on a slammed morning): set `ORDERS_OPEN` to `false` in Vercel and redeploy. The menu stays visible, but checkout explains that ordering is paused.
@@ -132,11 +138,18 @@ Capital letters don't matter, so "hot drinks" in Square works too, but the spell
 ## How orders work
 
 - Coffee is pickup only, either as soon as possible (ready in about 10 minutes) or at a chosen time up to about 3.5 hours ahead.
-- Flowers can be picked up or delivered (a $12 fee, Omemee, Lindsay and nearby). At checkout, customers choose "Soonest" or pick a day 2 to 60 days ahead. One order has one date, because each Square order holds one pickup or delivery.
+- Flowers can be picked up or delivered. Delivery costs $1.25 per km of one-way driving from the shop (41 King St E, Omemee), up to 35 km; both numbers can be changed at `/admin.html`. Customers see the distance and price as soon as they type their address, and the server works it out again at payment, so the browser can't change it. At checkout, customers choose "Soonest" or pick a day 2 to 60 days ahead. One order has one date, because each Square order holds one pickup or delivery.
 - Orders with Christmas items must be for one of the Christmas days (see "Everyday changes").
 - An order with coffee and flowers is a single pickup today. To have flowers delivered or pre-order them for another day, customers order the flowers separately.
 - HST (13%) is added to each order, and Square calculates the total, so the amount charged always matches Square's own calculation.
 - An order is refused if an item sold out or was removed in Square since the customer opened the page.
+
+## Delivery
+
+The delivery cost is the one-way driving distance from the shop, rounded to 0.1 km, times the per-km rate. Addresses further than the limit can't choose delivery.
+
+- **Without `GOOGLE_MAPS_API_KEY`** (the default), the site uses free OpenStreetMap services: Nominatim finds the address, and OSRM's public server measures the drive. They need no account, but they're run by volunteers with no guarantee, so on rare occasions a customer may see "We couldn't work out the delivery distance just now" and need to try again or call. Addresses are only accepted when they're found to at least the street, so typing just a town isn't enough.
+- **With `GOOGLE_MAPS_API_KEY`**, Google's Routes API measures the drive instead, which is more reliable and better at rural addresses. In Google Cloud, create a project, turn on the **Routes API**, create an API key restricted to that API, add it in Vercel, and redeploy. Google's free monthly allowance covers a small shop's deliveries many times over, but it asks for a billing account.
 
 ## For developers
 

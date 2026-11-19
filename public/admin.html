@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Shop Days</title>
+<link rel="icon" href="/img/sprigf.webp" type="image/webp">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600&display=swap">
+<style>
+:root{--plaster:#f7f2e4;--trim:#fbf8ef;--forest:#254641;--ink:#22332f;--muted:#5d625a;--door:#6b6a1d;--door-pale:#e6e4c4;--brick:#a4573f;--brick-pale:#f1ddd3;--rule:#ddd2b6;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--plaster);color:var(--ink);font:16px/1.5 "Work Sans",system-ui,sans-serif;padding-bottom:96px}
+header{background:var(--trim);box-shadow:0 3px 0 var(--door);position:sticky;top:0;z-index:5}
+header .w{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:10px}
+header img{height:36px}
+header a{color:var(--forest);font-weight:500;text-decoration:none}
+.w{max-width:720px;margin:0 auto;padding-inline:16px}
+h1{font:300 2.4rem/1.05 "Work Sans",sans-serif;letter-spacing:-.035em;color:var(--forest);margin:28px 0 6px}
+.lead{color:var(--muted);margin:0 0 22px}
+.card{background:var(--trim);box-shadow:inset 0 0 0 1px rgba(92,74,38,.25);padding:18px 16px;margin-bottom:18px}
+h2{font:400 1.35rem/1.15 "Work Sans",sans-serif;letter-spacing:-.02em;color:var(--forest);margin:0 0 4px}
+.hint{color:var(--muted);font-size:.9rem;margin:0 0 14px}
+label,.legend{display:block;font-weight:600;font-size:.9rem;color:var(--forest);margin-bottom:6px}
+input{font:inherit;width:100%;min-height:48px;border:1.5px solid var(--rule);border-radius:3px;padding:8px 12px;background:#fff;color:var(--ink)}
+input:focus,button:focus-visible{outline:2px solid var(--door);outline-offset:1px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+input[type=date]{-webkit-appearance:none;appearance:none;min-width:0}
+.field{margin-bottom:14px}
+.field small{display:block;color:var(--muted);font-size:.82rem;margin-top:4px}
+button{font:600 .82rem "Work Sans",system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;border:1.5px solid var(--door);background:transparent;color:var(--door);min-height:48px;padding:0 16px;border-radius:3px;cursor:pointer}
+button.primary{background:var(--door);color:#f6f1df}
+button:disabled{opacity:.5;cursor:default}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1.5px solid var(--door);border-radius:3px;overflow:hidden}
+.seg button{border:0;border-radius:0;min-height:52px;text-transform:none;letter-spacing:0;font-size:.95rem;line-height:1.2}
+.seg button small{display:block;font-weight:400;font-size:.76rem;opacity:.85;color:inherit}
+.seg button+button{border-left:1.5px solid var(--door)}
+.seg button[aria-pressed="true"]{background:var(--door);color:#f6f1df}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:16px}
+.week button{padding:0;min-height:48px;text-transform:none;letter-spacing:0;font-size:.9rem}
+.week button[aria-pressed="true"]{background:var(--door);color:#f6f1df}
+.week.closed button[aria-pressed="true"]{background:var(--brick);border-color:var(--brick)}
+.list{list-style:none;margin:0;padding:0}
+.list li{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--rule)}
+.list li:first-child{border-top:0}
+.list .what{flex:1;min-width:0}
+.list b{display:block;font-weight:600}
+.list small{color:var(--muted)}
+.list button{min-height:40px;padding:0 12px;font-size:.74rem}
+.empty{color:var(--muted);font-style:italic;margin:0}
+.pill{display:inline-block;font-size:.72rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:2px;margin-bottom:4px}
+.pill.c{background:var(--brick-pale);color:#7d3a26}
+.pill.d{background:var(--door-pale);color:#4a4914}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.days div{text-align:center;font-size:.78rem;padding:6px 0;border-radius:2px;background:#fff;box-shadow:inset 0 0 0 1px var(--rule)}
+.days div b{display:block;font-size:1rem;font-weight:500}
+.days .c{background:var(--brick-pale);box-shadow:none;color:#7d3a26}
+.days .d{background:var(--door-pale);box-shadow:none;color:#4a4914}
+.days .h{background:transparent;box-shadow:none;color:var(--muted);font-weight:600;padding:0}
+.key{display:flex;gap:14px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);margin-top:10px}
+.key span::before{content:"";display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px;background:var(--k)}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--trim);box-shadow:0 -3px 0 var(--door);z-index:6}
+.bar .w{display:flex;align-items:center;gap:12px;padding-block:12px}
+.bar .status{flex:1;font-size:.9rem;font-weight:600;color:var(--muted)}
+.bar .status.err{color:var(--brick)}
+.bar .status.ok{color:var(--door)}
+.bar button{min-width:120px}
+.pw input{margin-bottom:10px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header><div class="w"><a href="/"><img src="/img/logo.webp" alt="Studio Seven"></a><a href="/">Back to the shop</a></div></header>
+<main class="w">
+  <h1>Shop days</h1>
+  <p class="lead">Set the days the shop is closed and the days there are no deliveries. Checkout won't let customers pick those days. Changes show on the website within about a minute.</p>
+
+  <form class="card pw" id="pwForm" hidden>
+    <label for="pw">Staff password</label>
+    <input id="pw" type="password" autocomplete="current-password">
+    <button class="primary" type="submit" style="width:100%">Open</button>
+    <p class="hint" id="pwMsg" style="margin:10px 0 0">Needed once on this device. It's the same one as the photo focus page.</p>
+  </form>
+
+  <div id="app" hidden>
+    <section class="card">
+      <h2>Add days off</h2>
+      <p class="hint">One day, or a stretch like a holiday week.</p>
+      <div class="field"><span class="legend">What's happening</span>
+        <div class="seg" id="kind"><button type="button" data-k="c" aria-pressed="true">Closed<small>No orders at all</small></button><button type="button" data-k="d" aria-pressed="false">No deliveries<small>Pickup still open</small></button></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label for="from">From</label><input type="date" id="from"></div>
+        <div class="field"><label for="to">To</label><input type="date" id="to"><small>Leave empty for one day.</small></div>
+      </div>
+      <div class="field"><label for="note">Note for customers <span style="font-weight:400;color:var(--muted)">(optional)</span></label><input type="text" id="note" maxlength="40" placeholder="e.g. Christmas"></div>
+      <button type="button" class="primary" id="add" style="width:100%">Add</button>
+      <p class="hint" id="addMsg" style="margin:8px 0 0;color:var(--brick)" hidden></p>
+    </section>
+
+    <section class="card">
+      <h2>Coming up</h2>
+      <ul class="list" id="list"></ul>
+    </section>
+
+    <section class="card">
+      <h2>Every week</h2>
+      <p class="hint">Days you're always closed, or never deliver.</p>
+      <span class="legend">Closed every</span>
+      <div class="week closed" id="cw"></div>
+      <span class="legend">No deliveries every</span>
+      <div class="week" id="dw"></div>
+    </section>
+
+    <section class="card">
+      <h2>Next four weeks</h2>
+      <div class="days" id="cal"></div>
+      <div class="key"><span style="--k:var(--brick-pale)">Closed</span><span style="--k:var(--door-pale)">No deliveries</span></div>
+    </section>
+
+    <section class="card">
+      <h2>Delivery</h2>
+      <p class="hint">Customers pay this for each km of driving from the shop, one way. Addresses further than the distance below can't choose delivery.</p>
+      <div class="grid2">
+        <div class="field"><label for="rate">Per km ($)</label><input type="number" id="rate" inputmode="decimal" min="0" max="20" step="0.05"></div>
+        <div class="field"><label for="max">Up to (km)</label><input type="number" id="max" inputmode="decimal" min="1" max="200" step="1"></div>
+      </div>
+      <p class="hint" id="example" style="margin:0"></p>
+    </section>
+  </div>
+</main>
+<div class="bar" id="bar" hidden><div class="w"><span class="status" id="status" role="status"></span><button type="button" class="primary" id="save">Save</button></div></div>
+
+<script>
+(function(){
+  const PW="s7-staff";
+  const getPw=()=>{try{return localStorage.getItem(PW)||""}catch(e){return ""}};
+  const setPw=v=>{try{v?localStorage.setItem(PW,v):localStorage.removeItem(PW)}catch(e){}};
+  const $=s=>document.querySelector(s);
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const WD=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const iso=d=>d.toLocaleDateString("en-CA");
+  const today=iso(new Date());
+  const pretty=(d,y)=>new Date(d+"T12:00").toLocaleDateString("en-CA",{weekday:"short",month:"short",day:"numeric",...(y?{year:"numeric"}:{})});
+  let S=null, DEF={perKm:125,maxKm:35}, dirty=false, kind="c";
+
+  function status(msg,cls){const s=$("#status");s.textContent=msg;s.className="status"+(cls?" "+cls:"")}
+  function changed(){dirty=true;status("Not saved yet");render()}
+
+  async function api(body){
+    const r=await fetch("/api/admin",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:getPw()||$("#pw").value.trim(),...body})});
+    const out=await r.json().catch(()=>({}));
+    if(r.status===401){setPw("");showLogin(out.error)}
+    if(!r.ok)throw new Error(out.error||"That didn't work. Please try again.");
+    return out;
+  }
+  function showLogin(msg){$("#app").hidden=true;$("#bar").hidden=true;$("#pwForm").hidden=false;if(msg){$("#pwMsg").textContent=msg;$("#pwMsg").style.color="var(--brick)"}$("#pw").value="";$("#pw").focus()}
+  async function open(){
+    try{const out=await api({});setPw(getPw()||$("#pw").value.trim());S=out.schedule;DEF=out.defaults||DEF;
+      $("#pwForm").hidden=true;$("#app").hidden=false;$("#bar").hidden=false;
+      $("#rate").value=((S.r??DEF.perKm)/100).toFixed(2);$("#max").value=S.mx??DEF.maxKm;
+      status("Everything's saved","ok");render()}
+    catch(e){if(!$("#pwForm").hidden||!getPw()){$("#pwMsg").textContent=e.message;$("#pwMsg").style.color="var(--brick)"}showLogin()}
+  }
+  $("#pwForm").addEventListener("submit",e=>{e.preventDefault();if($("#pw").value.trim())open()});
+
+  function info(d){const wd=new Date(d+"T12:00").getDay(),hit=l=>l.find(r=>d>=r[0]&&d<=r[1]);
+    if(hit(S.c)||S.cw.includes(wd))return"c";if(hit(S.d)||S.dw.includes(wd))return"d";return""}
+  function render(){
+    const items=[...S.c.map(r=>["c",r]),...S.d.map(r=>["d",r])].sort((a,b)=>a[1][0]<b[1][0]?-1:1);
+    $("#list").innerHTML=items.length?items.map(([k,r])=>{const one=r[0]===r[1],y=r[0].slice(0,4)!==today.slice(0,4);
+      return `<li><div class="what"><span class="pill ${k}">${k==="c"?"Closed":"No deliveries"}</span><b>${esc(pretty(r[0],y))}${one?"":" to "+esc(pretty(r[1],y))}</b>${r[2]?`<small>${esc(r[2])}</small>`:""}</div><button type="button" data-rm="${k}|${r[0]}|${r[1]}">Remove</button></li>`}).join("")
+      :`<li><p class="empty">No days off coming up.</p></li>`;
+    for(const k of ["cw","dw"])$("#"+k).innerHTML=WD.map((n,i)=>`<button type="button" data-w="${k}" data-i="${i}" aria-pressed="${S[k].includes(i)}">${n}</button>`).join("");
+    const start=new Date();start.setDate(start.getDate()-start.getDay());let cal=WD.map(n=>`<div class="h">${n[0]}</div>`).join("");
+    for(let i=0;i<28;i++){const d=new Date(start);d.setDate(start.getDate()+i);const s=iso(d),k=s<today?"":info(s);
+      cal+=`<div class="${k}"${s<today?' style="opacity:.4"':""}><b>${d.getDate()}</b>${k==="c"?"Closed":k==="d"?"Pickup":""}</div>`}
+    $("#cal").innerHTML=cal;
+    const rate=Math.round(parseFloat($("#rate").value)*100),max=parseFloat($("#max").value);
+    $("#example").textContent=rate>=0&&max>0?`For example, a 20 km delivery costs $${(20*rate/100).toFixed(2)}, and the furthest, ${max} km, costs $${(max*rate/100).toFixed(2)}.`:"";
+  }
+
+  document.addEventListener("click",e=>{
+    const k=e.target.closest("#kind button");if(k){kind=k.dataset.k;document.querySelectorAll("#kind button").forEach(b=>b.setAttribute("aria-pressed",b===k));return}
+    const w=e.target.closest("[data-w]");if(w){const l=S[w.dataset.w],i=+w.dataset.i;S[w.dataset.w]=l.includes(i)?l.filter(x=>x!==i):[...l,i].sort();changed();return}
+    const rm=e.target.closest("[data-rm]");if(rm){const [k,a,b]=rm.dataset.rm.split("|");S[k]=S[k].filter(r=>!(r[0]===a&&r[1]===b));changed();return}
+  });
+  $("#add").addEventListener("click",()=>{
+    const msg=$("#addMsg"),from=$("#from").value;let to=$("#to").value||from;
+    if(!from){msg.textContent="Pick the first day.";msg.hidden=false;$("#from").focus();return}
+    if(to<from){msg.textContent="The last day is before the first day.";msg.hidden=false;$("#to").focus();return}
+    if(to<today){msg.textContent="Those days have already passed.";msg.hidden=false;return}
+    msg.hidden=true;
+    S[kind].push([from,to,$("#note").value.trim().slice(0,40)]);S[kind].sort((a,b)=>a[0]<b[0]?-1:1);
+    $("#from").value="";$("#to").value="";$("#note").value="";changed();
+  });
+  $("#from").addEventListener("change",()=>{if(!$("#to").value||$("#to").value<$("#from").value)$("#to").min=$("#from").value});
+  $("#rate").addEventListener("input",changed);$("#max").addEventListener("input",changed);
+
+  $("#save").addEventListener("click",async()=>{
+    const rate=parseFloat($("#rate").value),max=parseFloat($("#max").value);
+    if(!(rate>=0&&rate<=20)){status("Per km should be between $0 and $20.","err");$("#rate").focus();return}
+    if(!(max>=1&&max<=200)){status("Up to should be between 1 and 200 km.","err");$("#max").focus();return}
+    $("#save").disabled=true;status("Saving…");
+    try{const out=await api({schedule:{...S,r:Math.round(rate*100),mx:max}});S=out.schedule;dirty=false;status("Saved. Live within a minute.","ok");render()}
+    catch(e){status(e.message,"err")}
+    $("#save").disabled=false;
+  });
+  window.addEventListener("beforeunload",e=>{if(dirty){e.preventDefault();e.returnValue=""}});
+
+  if(getPw())open();else showLogin();
+})();
+</script>
+</body>
+</html>

@@ -3,7 +3,14 @@
   "coffeeCategories": ["Hot drinks", "Cold drinks"],
   "flowerCategories": ["Fresh flowers"],
   "taxPercent": "13",
-  "deliveryFee": 1200,
+  "delivery": {
+    "_how": "Delivery is charged per km of one-way driving distance from the shop, and refused past maxKm. perKm is in cents (125 = $1.25). The rate and the distance can also be changed at /admin.html, which wins over these. lat/lon are the shop's spot on the map, for working out distances.",
+    "from": "41 King St E, Omemee, ON K0L 2W0",
+    "lat": 44.3003656,
+    "lon": -78.5545074,
+    "perKm": 125,
+    "maxKm": 35
+  },
   "occasions": ["Just because", "Birthday", "Anniversary", "Sympathy", "Thank you", "Get well", "New baby", "A holiday"],
   "preorderMinDays": 2,
   "preorderMaxDays": 60,
