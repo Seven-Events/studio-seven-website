@@ -12,6 +12,8 @@ try{const r=await fetch("/api/menu");if(!r.ok)throw 0;M=await r.json()}catch(e){
 const C=M.coffee, F=M.flowers;
 const COFFEE=Object.fromEntries(C.categories.map(c=>[c.name,c.items]));
 const FLOWERS=F.items;
+/* Focus spots come from shop-settings.json. Staff previewing picks from /focus.html on this device see those first. */
+try{const ov=JSON.parse(localStorage.getItem("s7-focus"))||{};FLOWERS.forEach(f=>{if(ov[f.n])f.focus=ov[f.n]})}catch(e){}
 const allDrinks=()=>C.categories.flatMap(c=>c.items);
 const item=id=>allDrinks().find(x=>x.id===id)||FLOWERS.find(x=>x.id===id);
 const minP=i=>Math.min(...i.v.map(v=>v.p));
@@ -51,7 +53,7 @@ const once=["Fresh flowers","Coffee bar","Mobile coffee cart","Downtown Omemee",
 $("#ribbon").innerHTML=once+once+once+once;
 
 /* ---------- TILES ---------- */
-const tile=(f,i)=>`<button class="tile" type="button" data-fid="${f.id}"><span class="pic">${f.out?`<span class="flag out">Sold out</span>`:f.tag?`<span class="flag">${esc(f.tag)}</span>`:isXmas(f)?`<span class="flag">Christmas</span>`:""}${f.img?`<img class="photo" src="${esc(f.img)}" alt="" loading="lazy">`:`<img src="${i%4===0||i%4===3?SPRIGF:SPRIG}" alt="">`}</span><b>${esc(f.n)}</b><span class="pr">${fromP(f).replace(/\.00$/,"")}</span></button>`;
+const tile=(f,i)=>`<button class="tile" type="button" data-fid="${f.id}"><span class="pic">${f.out?`<span class="flag out">Sold out</span>`:f.tag?`<span class="flag">${esc(f.tag)}</span>`:isXmas(f)?`<span class="flag">Christmas</span>`:""}${f.img?`<img class="photo" src="${esc(f.img)}" style="object-position:${esc(f.focus||"50% 50%")}" alt="" loading="lazy">`:`<img src="${i%4===0||i%4===3?SPRIGF:SPRIG}" alt="">`}</span><b>${esc(f.n)}</b><span class="pr">${fromP(f).replace(/\.00$/,"")}</span></button>`;
 $("#featTiles").innerHTML=FLOWERS.filter(f=>!f.out).slice(0,4).map(tile).join("");
 if(!FLOWERS.length)$("#flowerTiles").insertAdjacentHTML("beforebegin",'<p class="empty">Flowers are coming soon.</p>');
 $("#flowerTiles").innerHTML=FLOWERS.map(tile).join("");
@@ -77,7 +79,7 @@ function closeSheet(){$("#scrim").classList.remove("on");$("#sheet").classList.r
 $("#scrim").addEventListener("click",()=>{if(!paying)closeSheet()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!paying)closeSheet()});
 $("#sheet").addEventListener("click",e=>{if(e.target.closest("[data-close]")&&!paying)closeSheet()});
-const pic=i=>i.img?`<img class="sheet-pic" src="${esc(i.img)}" alt="">`:"";
+const pic=i=>i.img?`<img class="sheet-pic" src="${esc(i.img)}" style="object-position:${esc(i.focus||"50% 50%")}" alt="">`:"";
 const head=(t,sub)=>`<div class="sheet-h"><div><h2 id="sheetTitle">${t}</h2>${sub?`<p>${sub}</p>`:""}</div><button class="x" type="button" data-close aria-label="Close">×</button></div>`;
 const choice=(name,opts,sel=0,key=name)=>`<div class="field"><span class="legend">${esc(name)}</span><div class="choice${opts.length>5?" many":""}" data-seg="${esc(key)}">${opts.map((o,i)=>`<button type="button" aria-pressed="${i===sel}" data-i="${i}"${o.off?" disabled":""}>${esc(o.n)}${o.d?`<small>+${money(o.d)}</small>`:""}${o.off?`<small>Sold out</small>`:""}</button>`).join("")}</div></div>`;
 function wire(root,cb){root.querySelectorAll("[data-seg]").forEach(g=>g.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.disabled)return;g.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));cb&&cb()}))}

@@ -60,3 +60,12 @@ test("loadMenu pages through the catalog and asks Square for stock of tracked it
   assert.deepEqual(calls[2][1].catalog_object_ids, ["V_dried_0", "V_dried_1"]);
   assert.equal(m.flowers.items.length, 6);
 });
+
+test("photo focus spots come from shop settings by item name, and bad values fall back to centre", () => {
+  const settings = require("../shop-settings.json");
+  const opts = { ...settings, focus: { "Market Bunch": "30% 70%", "Dried Wreath": "left top" } };
+  const m = buildMenu(fx.objects, fx.counts, "L1", opts);
+  assert.equal(m.flowers.items.find((i) => i.n === "Market Bunch").focus, "30% 70%");
+  assert.equal(m.flowers.items.find((i) => i.n === "Dried Wreath").focus, null);
+  assert.equal(buildMenu(fx.objects, fx.counts, "L1", { ...settings, focus: undefined }).flowers.items[0].focus, null);
+});

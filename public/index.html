@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="Studio Seven is a flower shop and coffee bar in downtown Omemee, Ontario. Order coffee ahead, shop flowers, pre-order for special days, and book our mobile coffee cart.">
-<meta name="theme-color" content="#e9e6c7">
+<meta name="theme-color" content="#fbf8ef">
 <meta property="og:title" content="Studio Seven · Flowers & Coffee in Omemee">
 <meta property="og:description" content="Fresh flowers and good coffee on the main street in Omemee, Ontario.">
 <meta property="og:image" content="/img/logo.webp">
@@ -12,7 +12,7 @@
 <title>Studio Seven Omemee</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Work+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&display=swap">
 <style>
 /* Layout: the shopfront on a phone. Light-only by choice: ivory walls, light green front, faded brick, logo greens and blush.
    Full-width colour bands stack like sections of the storefront; a tile collage, a tilted ribbon and pill buttons carry the boutique feel. */
@@ -287,6 +287,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--forest);outline:none}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}.ribbon .track{animation:none}}
 @media (min-width:640px){.tiles{grid-template-columns:repeat(3,1fr)}.cart2{grid-template-columns:1fr 1fr;align-items:center}}
 </style>
+<link rel="stylesheet" href="/historic.css">
+<link rel="stylesheet" href="/theme.css">
 </head>
 <body>
 <header class="top">
@@ -349,6 +351,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--forest);outline:none}
 
     <section class="band">
       <div class="wrap">
+        <div class="orn"><i></i></div>
         <dl class="notes">
           <div><dt>Find us</dt><dd>Downtown Omemee, Ontario</dd></div>
           <div><dt>Opening day</dt><dd>Coming soon</dd></div>
@@ -371,12 +374,14 @@ input:focus,select:focus,textarea:focus{border-color:var(--forest);outline:none}
     <section class="page-h"><div class="wrap"><span class="kicker">The flower shop</span><h1>Flowers</h1><p>Order for today, or pre-order up to 60 days ahead for birthdays, anniversaries and holidays.</p></div></section>
     <section class="band" style="padding-top:26px"><div class="wrap">
       <div class="tiles" id="flowerTiles"></div>
+      <div class="orn"><i></i></div>
       <div class="aside"><b>Planning ahead?</b><span>Valentine's and Mother's Day sell out first. Pre-order and we'll hold yours.</span></div>
       <div class="aside" style="background:var(--tileB)"><b>Wedding or event?</b><span>Send us your date through the <a href="#cart-booking">coffee cart request</a> and tick "Add flowers from the shop", and we'll set up a time to talk.</span></div>
     </div></section>
   </div>
 
-  <footer class="foot" style="margin-top:36px">
+  <span class="rail base" aria-hidden="true" style="margin-top:36px"></span>
+  <footer class="foot">
     <div class="wrap">
       <img src="/img/logo.webp" alt="Studio Seven">
       <span>Flowers &amp; coffee · Downtown Omemee, Ontario</span>

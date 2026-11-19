@@ -1,0 +1,163 @@
+/* =====================================================================
+   Studio Seven · historic walls layer
+   Loaded after the site's own styles. Painted beadboard wainscoting,
+   milled trim (crown, chair rail, baseboard), framed panels, engraved
+   small-caps signage. Brand kept: logo, deep forest green, brick red.
+   ===================================================================== */
+:root{
+  --plaster:#f7f2e4;          /* painted plaster above the rail */
+  --board:#efe7d0;            /* cream beadboard, matched to the shop photos */
+  --board-2:#e7dcc0;          /* shaded board, lower wall / footer */
+  --trim:#fbf8ef;             /* trim paint, a touch whiter than the boards */
+  --trim-shadow:rgba(92,74,38,.22);
+  --groove:rgba(92,74,38,.20);
+  --page:var(--plaster); --band1:var(--board); --nav-on:transparent;
+  --rule:#ddd2b6; --muted:#5d625a;
+  --sc:"IM Fell English SC","Cormorant SC",Georgia,serif;
+  --body:"EB Garamond","Iowan Old Style",Georgia,serif;
+}
+
+/* ---------- materials ---------- */
+/* Beadboard: 2-3/4" boards. Each one has a dark V-groove, a soft shadow, and a rounded bead catching the light. */
+.bead,.hero,.page-h,.foot{
+  background-color:var(--board);
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .45  0 0 0 0 .38  0 0 0 0 .22  0 0 0 .05 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+    linear-gradient(180deg,rgba(255,252,242,.55),rgba(255,252,242,0) 40%,rgba(120,96,50,.06)),
+    repeating-linear-gradient(90deg,
+      var(--groove) 0 1px,
+      rgba(92,74,38,.07) 1px 3px,
+      rgba(255,253,246,.85) 3px 5px,
+      rgba(255,253,246,0) 9px 48px);
+}
+/* Milled trim. Stacked bands of paint with highlight and shadow lines read as a moulding profile. */
+.rail{
+  display:block;height:22px;position:relative;z-index:2;
+  background:linear-gradient(180deg,
+    #fffdf6 0 2px, var(--trim) 2px 6px, rgba(92,74,38,.28) 6px 7px,
+    #fffaf0 7px 9px, #f1e9d3 9px 13px, rgba(92,74,38,.22) 13px 14px,
+    var(--trim) 14px 19px, rgba(92,74,38,.35) 19px 20px, rgba(92,74,38,.10) 20px 22px);
+  box-shadow:0 6px 10px -6px rgba(92,74,38,.35);
+}
+.rail.base{height:28px;background:linear-gradient(180deg,
+    rgba(92,74,38,.25) 0 1px, #fffaf0 1px 3px, var(--trim) 3px 8px, rgba(92,74,38,.22) 8px 9px, var(--trim) 9px 28px);box-shadow:none}
+
+/* ---------- type ---------- */
+body{font-family:var(--body);font-size:18px;line-height:1.5}
+.kicker{font-family:var(--sc);font-weight:400;text-transform:none;letter-spacing:.12em;font-size:1.02rem;display:inline-flex;align-items:center;gap:12px;color:var(--pop)}
+.kicker::before{content:"";width:28px;height:0;border-top:1px solid currentColor;border-bottom:1px solid currentColor;padding-top:2px;opacity:.7}
+.page-h p,.hero p,.sh p{font-size:1.14rem}
+.tile span.pr,.drink .pr,.dish .pr,.totals,.line .p,.notes dd{font-family:var(--sans)}
+button,.btn,.bag,.cat,.opt span,.choice button,.nav a,.topnav a{font-family:var(--sans)}
+
+/* Ornament: rule, diamond, rule */
+.orn{display:flex;align-items:center;gap:14px;color:var(--olive);width:100%}
+.orn::before,.orn::after{content:"";flex:1;border-top:1px solid currentColor;opacity:.55}
+.orn i{width:9px;height:9px;transform:rotate(45deg);border:1px solid currentColor;flex:none;position:relative}
+.orn i::after{content:"";position:absolute;inset:2px;background:currentColor}
+.orn.short{max-width:220px}
+
+/* ---------- header: crown moulding ---------- */
+.top{background:var(--trim);border-bottom:0;box-shadow:0 1px 0 rgba(92,74,38,.28),0 4px 0 var(--trim),0 5px 0 rgba(92,74,38,.18),0 9px 12px -6px rgba(92,74,38,.3)}
+.bag{border-radius:3px;box-shadow:inset 0 0 0 3px var(--btn),inset 0 0 0 4px rgba(250,246,236,.45);letter-spacing:.04em}
+.bag .n{border-radius:2px}
+@media (min-width:900px){
+  .topnav{gap:2px}
+  .topnav a{font-variant:small-caps;letter-spacing:.08em;font-size:1.02rem;border-radius:0;position:relative;padding:10px 16px}
+  .topnav a:hover{background:transparent;color:var(--pop)}
+  .topnav a[aria-current="page"]{background:transparent;color:var(--pop)}
+  .topnav a[aria-current="page"]::after{content:"";position:absolute;left:16px;right:16px;bottom:4px;height:3px;border-top:1px solid currentColor;border-bottom:1px solid currentColor}
+}
+
+/* ---------- buttons: painted sign boards ---------- */
+.btn{border-radius:3px;letter-spacing:.06em;text-transform:uppercase;font-size:.84rem;min-height:54px;box-shadow:inset 0 0 0 4px var(--btn),inset 0 0 0 5px rgba(250,246,236,.5)}
+.btn.out{box-shadow:inset 0 0 0 3px var(--plaster),inset 0 0 0 4px currentColor}
+.hero .btn.out{box-shadow:inset 0 0 0 3px var(--board),inset 0 0 0 4px var(--hero-ink)}
+.hero .btn{box-shadow:inset 0 0 0 4px var(--hero-btn),inset 0 0 0 5px rgba(250,246,236,.5)}
+
+/* ---------- home hero: the wall itself ---------- */
+.hero{padding-bottom:0}
+.hero h1 em{font-style:italic}
+.collage .cl{border-radius:2px;background:var(--trim)!important;border:0;
+  box-shadow:inset 0 0 0 10px var(--trim),inset 0 0 0 11px rgba(92,74,38,.25),inset 2px 2px 0 11px rgba(255,255,255,.9),inset -2px -2px 0 11px rgba(92,74,38,.10),0 1px 0 rgba(92,74,38,.25),0 8px 16px -10px rgba(92,74,38,.45)}
+.collage .c2,.collage .c3{background:#f2ead5!important}
+.cl span{border-radius:2px;background:var(--trim);border:1px solid rgba(37,70,65,.35);box-shadow:inset 0 0 0 2px var(--trim),inset 0 0 0 3px rgba(37,70,65,.18);font-size:1.25rem;padding:6px 12px 7px}
+.shopall{border-radius:3px;background:var(--forest);color:var(--trim);box-shadow:inset 0 0 0 3px var(--forest),inset 0 0 0 4px rgba(251,248,239,.5),0 8px 14px rgba(37,70,65,.2)}
+.hero::after,.page-h::after{content:"";display:block;height:22px;margin-top:40px;position:relative;
+  background:linear-gradient(180deg,#fffdf6 0 2px,var(--trim) 2px 6px,rgba(92,74,38,.28) 6px 7px,#fffaf0 7px 9px,#f1e9d3 9px 13px,rgba(92,74,38,.22) 13px 14px,var(--trim) 14px 19px,rgba(92,74,38,.35) 19px 20px,rgba(92,74,38,.10) 20px 22px);
+  box-shadow:0 6px 10px -6px rgba(92,74,38,.35)}
+.page-h{padding-bottom:0}
+
+/* ribbon becomes a straight painted sign band */
+.ribbon{transform:none;margin:0;background:var(--forest);border-block:0;box-shadow:inset 0 3px 0 var(--forest),inset 0 4px 0 rgba(233,215,160,.45),inset 0 -3px 0 var(--forest),inset 0 -4px 0 rgba(233,215,160,.45)}
+.ribbon span{font-family:var(--sc);text-transform:none;letter-spacing:.16em;font-size:1rem;font-weight:400;color:#f3ead2}
+.ribbon .track{padding-block:12px}
+
+/* ---------- product tiles: framed prints ---------- */
+.tile .pic{border-radius:0;background:var(--trim)!important;padding:10px;
+  box-shadow:0 0 0 1px rgba(92,74,38,.22),0 10px 18px -12px rgba(92,74,38,.5)}
+.tile .pic::after{content:"";position:absolute;inset:10px;box-shadow:inset 0 0 0 1px rgba(37,70,65,.25),inset 0 2px 6px rgba(60,45,20,.18);pointer-events:none}
+.tile .pic img.photo{border-radius:0}
+.tile .flag{border-radius:2px;left:18px;top:18px;font-family:var(--sc);text-transform:none;font-weight:400;letter-spacing:.08em;font-size:.86rem;padding:3px 10px 4px;z-index:1}
+.tile b{font-size:1.5rem;margin-top:6px}
+.tile{gap:4px}
+.tile .meta{display:flex;align-items:baseline;gap:10px}
+.tile .meta .dots{flex:1;border-bottom:1.5px dotted rgba(37,70,65,.3);transform:translateY(-5px)}
+
+/* ---------- coffee band: painted green wainscot ---------- */
+.band.brick{
+  --groove:rgba(0,0,0,.28);
+  background-color:#2a4a44;
+  background-image:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.08)),
+    repeating-linear-gradient(90deg,rgba(0,0,0,.32) 0 1px,rgba(0,0,0,.12) 1px 3px,rgba(255,255,255,.10) 3px 5px,rgba(255,255,255,0) 9px 48px);
+  color:#efe7d0}
+.band.brick h2{color:#f6efdc}
+.band.brick .kicker{color:#e7b7a6}
+.band.brick .sh p{color:#d8d3bf}
+.band.brick .drinks{border-top-color:#e7dcc0}
+.band.brick .drink{border-bottom-color:rgba(239,231,208,.22)}
+.band.brick .drink .nm{color:#f6efdc}
+.band.brick .drink .dots{border-bottom-color:rgba(239,231,208,.35)}
+.band.brick .drink .pr{color:#efe7d0}
+.band.brick .btn{background:var(--trim);border-color:var(--trim);color:var(--forest);box-shadow:inset 0 0 0 4px var(--trim),inset 0 0 0 5px rgba(37,70,65,.4)}
+
+/* coffee cart picture */
+.cartpic{border-radius:2px;background:var(--trim)!important;box-shadow:inset 0 0 0 12px var(--trim),inset 0 0 0 13px rgba(92,74,38,.25),inset 0 0 0 26px #f2ead5,inset 0 0 0 27px rgba(92,74,38,.15),0 10px 20px -12px rgba(92,74,38,.5)}
+.cartpic span{border-radius:3px;background:var(--forest);color:var(--trim);left:30px;bottom:30px}
+
+/* notes / footer */
+@media (min-width:900px){.notes div{border-top:0;box-shadow:0 -1px 0 var(--forest),0 -4px 0 var(--plaster),0 -5px 0 var(--forest)}}
+.notes dt{font-family:var(--sc);letter-spacing:.06em;font-size:1.05rem}
+.foot{margin-top:0!important;padding-block:34px 40px;background-color:var(--board-2)}
+.foot span{font-family:var(--sc);letter-spacing:.08em}
+
+/* ---------- inner pages ---------- */
+.page-h h1{letter-spacing:-.005em}
+.cats{background:var(--plaster)}
+.cat{border-radius:3px}
+.menu h2{display:flex;align-items:center;gap:16px}
+.menu h2::after{content:"";flex:1;border-top:1px solid var(--rule)}
+.tagx{border-radius:2px;font-family:var(--sc);text-transform:none;font-weight:400;letter-spacing:.06em;font-size:.82rem}
+.aside{border-radius:2px;background:var(--trim)!important;padding:22px 24px;
+  box-shadow:inset 0 0 0 1px rgba(92,74,38,.25),inset 0 0 0 6px var(--trim),inset 0 0 0 7px rgba(37,70,65,.18)}
+.aside b{font-size:1.55rem}
+
+/* ---------- sheet, forms ---------- */
+.sheet{border-radius:6px 6px 0 0;background:var(--plaster)}
+input[type=text],input[type=email],input[type=tel],input[type=date],select,textarea{border-radius:3px}
+.opt span,.choice,.choice button,.qty button,.x{border-radius:3px}
+.formcard{border-radius:3px}
+
+/* ---------- bottom nav (phones) ---------- */
+.nav{background:var(--trim);border-top:0;box-shadow:0 -1px 0 rgba(92,74,38,.28),0 -4px 0 var(--trim),0 -5px 0 rgba(92,74,38,.18)}
+.nav a{font-variant:small-caps;letter-spacing:.08em;font-size:.98rem;border-radius:0}
+.nav a[aria-current="page"]{background:transparent;color:var(--pop);box-shadow:inset 0 -3px 0 var(--trim),inset 0 -4px 0 currentColor,inset 0 -6px 0 var(--trim),inset 0 -7px 0 currentColor}
+
+@media (min-width:900px){
+  .hero::after,.page-h::after{margin-top:64px}
+  .page-h::after{margin-top:56px}
+  .tiles{gap:40px 30px}
+}
+
+body{margin:0}
+.aside a{color:var(--forest);text-underline-offset:3px}
