@@ -53,7 +53,7 @@ function route(){
 window.addEventListener("hashchange",route);
 
 /* ---------- RIBBON ---------- */
-const once=["Fresh flowers","Coffee bar","Mobile coffee cart","Downtown Omemee","Pre-orders open"].map(w=>`<span>${w} ✿</span>`).join("");
+const once=["Fresh flowers","Coffee bar","Downtown Omemee","Pre-orders open"].map(w=>`<span>${w} ✿</span>`).join("");
 $("#ribbon").innerHTML=once+once+once+once;
 
 /* ---------- TILES ---------- */
