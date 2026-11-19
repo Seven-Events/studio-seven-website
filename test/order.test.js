@@ -1,8 +1,8 @@
 const test = require("node:test");
 const assert = require("node:assert");
 const fx = require("./fixtures/square-catalog.json");
-const { buildMenu } = require("../lib/catalog");
-const { priceCart, buildSquareOrder, OrderError } = require("../lib/order");
+const { buildMenu, settings } = require("../lib/catalog");
+const { priceCart, buildSquareOrder, OrderError, openChristmasDates } = require("../lib/order");
 
 const menu = buildMenu(fx.objects, fx.counts, "L1");
 const NOW = new Date("2027-05-03T14:00:00Z"); // 10:00 in Omemee
@@ -46,14 +46,27 @@ test("sold-out stock is refused, in-stock is fine", () => {
   assert.equal(priceCart([{ id: "I_dried", v: "V_dried_0", q: 1 }], menu, NOW).lines.length, 1);
 });
 
-test("flower pre-order must be 2 to 60 days out and carries its notes", () => {
-  assert.throws(() => priceCart([{ id: "I_market", preorderDate: inDays(1), v: "V_market_0", q: 1 }], menu, NOW), OrderError);
-  assert.throws(() => priceCart([{ id: "I_market", preorderDate: inDays(61), v: "V_market_0", q: 1 }], menu, NOW), OrderError);
-  const r = priceCart([{ id: "I_arr", v: "V_arr_2", occasion: 1, preorderDate: inDays(10), card: "Happy birthday!", q: 1 }], menu, NOW);
-  assert.equal(r.lines[0]._unit, 12500);
-  assert.match(r.lines[0].note, /PRE-ORDER/);
-  assert.match(r.lines[0].note, /Birthday/);
-  assert.match(r.lines[0].note, /Happy birthday!/);
+test("flower pre-order date is chosen at checkout, must be 2 to 60 days out, and goes on every flower line", () => {
+  const order = (date, cart = [{ id: "I_market", v: "V_market_0", q: 1 }]) => buildSquareOrder({ cart, customer: cust, fulfillment: { flowers: "pickup", date }, menu, locationId: "L1", now: NOW });
+  assert.throws(() => order(inDays(1)), /2 to 60 days/);
+  assert.throws(() => order(inDays(61)), /2 to 60 days/);
+  assert.throws(() => order("next tuesday"), /valid date/);
+  const o = order(inDays(10), [{ id: "I_arr", v: "V_arr_2", occasion: 1, card: "Happy birthday!", q: 1 }, { id: "I_bud", q: 1 }]);
+  assert.equal(o.fulfillments[0].pickup_details.schedule_type, "SCHEDULED");
+  assert.equal(o.fulfillments[0].pickup_details.pickup_at, `${inDays(10)}T14:00:00.000Z`); // 10:00 EDT
+  assert.match(o.line_items[0].note, new RegExp(`^PRE-ORDER for ${inDays(10)} \\| For: Birthday \\| Card: "Happy birthday!"$`));
+  assert.match(o.line_items[1].note, /^PRE-ORDER for/);
+  assert.equal(o.line_items[0]._flower, undefined);
+});
+
+test("flowers without a date are a same-day pickup", () => {
+  const o = buildSquareOrder({ cart: [{ id: "I_market", v: "V_market_0", q: 1 }], customer: cust, fulfillment: { flowers: "pickup" }, menu, locationId: "L1", now: NOW });
+  assert.equal(o.fulfillments[0].pickup_details.schedule_type, "ASAP");
+  assert.doesNotMatch(o.line_items[0].note, /PRE-ORDER/);
+});
+
+test("pre-ordered flowers can't share an order with today's coffee", () => {
+  assert.throws(() => buildSquareOrder({ cart: [{ id: "I_market", v: "V_market_0", q: 1 }, latte], customer: cust, fulfillment: { flowers: "pickup", coffeeTime: "asap", date: inDays(5) }, menu, locationId: "L1", now: NOW }), /separate order/);
 });
 
 test("coffee order becomes an ASAP pickup with HST", () => {
@@ -76,7 +89,7 @@ test("scheduled coffee time must be within 4 hours", () => {
 
 test("flower delivery adds the fee and schedules for the pre-order date at noon shop time", () => {
   const date = inDays(5);
-  const o = buildSquareOrder({ cart: [{ id: "I_market", v: "V_market_0", preorderDate: date, q: 1 }], customer: cust, fulfillment: { flowers: "delivery", address: "12 King St E, Omemee" }, menu, locationId: "L1", now: NOW });
+  const o = buildSquareOrder({ cart: [{ id: "I_market", v: "V_market_0", q: 1 }], customer: cust, fulfillment: { flowers: "delivery", address: "12 King St E, Omemee", date }, menu, locationId: "L1", now: NOW });
   assert.equal(o.fulfillments[0].type, "DELIVERY");
   assert.equal(o.service_charges[0].amount_money.amount, 1200);
   assert.equal(o.fulfillments[0].delivery_details.deliver_at, `${date}T16:00:00.000Z`); // noon EDT
@@ -90,6 +103,43 @@ test("coffee can't be delivered, and delivery needs an address and phone", () =>
 });
 
 test("winter pre-orders use standard time", () => {
-  const o = buildSquareOrder({ cart: [{ id: "I_bud", preorderDate: "2027-12-20", q: 1 }], customer: cust, fulfillment: { flowers: "pickup" }, menu, locationId: "L1", now: new Date("2027-11-15T15:00:00Z") });
+  const o = buildSquareOrder({ cart: [{ id: "I_bud", q: 1 }], customer: cust, fulfillment: { flowers: "pickup", date: "2027-12-20" }, menu, locationId: "L1", now: new Date("2027-11-15T15:00:00Z") });
   assert.equal(o.fulfillments[0].pickup_details.pickup_at, "2027-12-20T15:00:00.000Z"); // 10:00 EST
+});
+
+// Christmas: "Bud Vase Trio" stands in for a holiday item, with two pickup/delivery days set.
+const XNOW = new Date("2027-12-15T15:00:00Z"); // Dec 15, 10:00 in Omemee
+const xmasMenu = (dates, orderAheadDays = 1) => buildMenu(fx.objects, fx.counts, "L1", { ...settings, christmas: { items: ["bud vase trio"], dates, orderAheadDays } });
+const xorder = (m, fulfillment, cart = [{ id: "I_bud", q: 1 }]) => buildSquareOrder({ cart, customer: cust, fulfillment: { flowers: "pickup", ...fulfillment }, menu: m, locationId: "L1", now: XNOW });
+
+test("with no Christmas days set, holiday items sell like any other flowers", () => {
+  const m = xmasMenu([]);
+  assert.equal(m.flowers.christmas, null);
+  assert.equal(m.flowers.items.find((i) => i.id === "I_bud").xmas, undefined);
+  assert.equal(xorder(m, {}).fulfillments[0].pickup_details.schedule_type, "ASAP");
+});
+
+test("Christmas items must be for one of the Christmas days, which Square gets as the scheduled time", () => {
+  const m = xmasMenu(["2027-12-23", "2027-12-20", "bad"]);
+  assert.deepEqual(m.flowers.christmas, { dates: ["2027-12-20", "2027-12-23"], orderAheadDays: 1 });
+  assert.equal(m.flowers.items.find((i) => i.id === "I_bud").xmas, true);
+  assert.throws(() => xorder(m, {}), /Christmas pickup or delivery day/);
+  assert.throws(() => xorder(m, { date: "2027-12-21" }), /isn't available/);
+  const o = xorder(m, { date: "2027-12-23" }, [{ id: "I_bud", q: 1 }, { id: "I_market", v: "V_market_0", q: 1 }]);
+  assert.equal(o.fulfillments[0].pickup_details.pickup_at, "2027-12-23T15:00:00.000Z"); // 10:00 EST
+  assert.match(o.line_items[0].note, /^CHRISTMAS PRE-ORDER for 2027-12-23/);
+  assert.match(o.line_items[1].note, /^PRE-ORDER for 2027-12-23/);
+  const d = xorder(m, { flowers: "delivery", address: "12 King St E, Omemee", date: "2027-12-20" });
+  assert.equal(d.fulfillments[0].delivery_details.deliver_at, "2027-12-20T17:00:00.000Z"); // noon EST
+});
+
+test("Christmas days close orderAheadDays before, and coffee goes in its own order", () => {
+  const m = xmasMenu(["2027-12-16", "2027-12-20"]);
+  assert.deepEqual(openChristmasDates(m, XNOW), ["2027-12-16", "2027-12-20"]);
+  assert.deepEqual(openChristmasDates(xmasMenu(["2027-12-16", "2027-12-20"], 2), XNOW), ["2027-12-20"]);
+  assert.throws(() => xorder(m, { date: "2027-12-15" }), /isn't available/);
+  assert.throws(() => xorder(xmasMenu(["2027-12-15"]), { date: "2027-12-15" }), /closed/);
+  assert.throws(() => xorder(m, { date: "2027-12-20", coffeeTime: "asap" }, [{ id: "I_bud", q: 1 }, latte]), /separate order/);
+  // Regular flowers aren't held to the Christmas days.
+  assert.equal(xorder(m, {}, [{ id: "I_market", v: "V_market_0", q: 1 }]).fulfillments[0].pickup_details.schedule_type, "ASAP");
 });

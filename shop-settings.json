@@ -7,6 +7,12 @@
   "occasions": ["Just because", "Birthday", "Anniversary", "Sympathy", "Thank you", "Get well", "New baby", "A holiday"],
   "preorderMinDays": 2,
   "preorderMaxDays": 60,
+  "christmas": {
+    "_how": "Christmas pre-orders. List the Square item names that are Christmas-only under items, and the pickup/delivery days as YYYY-MM-DD under dates, e.g. [\"2026-12-20\", \"2026-12-23\"]. While dates is empty, these items sell like any other flowers. Once dates are set, customers ordering them must choose one of those days at checkout. orderAheadDays is how many days before a day it stops taking orders (1 = order by the day before).",
+    "items": ["Holiday Centerpiece", "Holiday Bowl", "Holiday Wrap"],
+    "dates": [],
+    "orderAheadDays": 1
+  },
   "tags": {
     "Lavender Honey Latte": "House",
     "Rose Cardamom Latte": "House",

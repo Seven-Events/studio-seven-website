@@ -25,10 +25,15 @@ function describe(l){
   i.mods.forEach(m=>m.o.forEach(x=>{if((l.mods||[]).includes(x.id)){p+=x.d;o.push(m.n.toLowerCase()==="milk"&&!/milk/i.test(x.n)?x.n+" milk":x.n)}}));
   if(i.kind==="coffee"){if(l.note)o.push(`"${l.note}"`)}
   else{o.push(F.occasions[l.occasion||0]);
-    if(l.preorderDate)o.push("for "+new Date(l.preorderDate+"T12:00").toLocaleDateString("en-CA",{weekday:"long",month:"long",day:"numeric"}));
     if(l.card)o.push(`card: "${l.card}"`)}
   return {n:i.n,unit:p,opts:o.join(", "),kind:i.kind};
 }
+const fmtDay=d=>new Date(d+"T12:00").toLocaleDateString("en-CA",{weekday:"long",month:"long",day:"numeric"});
+function day(days){const d=new Date();d.setDate(d.getDate()+days);return d.toLocaleDateString("en-CA")}
+/* Christmas pickup/delivery days (set in shop-settings.json). Each one stops taking orders orderAheadDays before. */
+const XMAS=F.christmas;
+const xmasOpen=()=>XMAS?XMAS.dates.filter(d=>d>=day(XMAS.orderAheadDays)):[];
+const isXmas=i=>!!(XMAS&&i&&i.xmas);
 const save=()=>{store.set("cart3",cart);$("#cartN").textContent=cart.reduce((a,l)=>a+l.q,0)};
 
 /* ---------- ROUTING ---------- */
@@ -46,7 +51,7 @@ const once=["Fresh flowers","Coffee bar","Mobile coffee cart","Downtown Omemee",
 $("#ribbon").innerHTML=once+once+once+once;
 
 /* ---------- TILES ---------- */
-const tile=(f,i)=>`<button class="tile" type="button" data-fid="${f.id}"><span class="pic">${f.out?`<span class="flag out">Sold out</span>`:f.tag?`<span class="flag">${esc(f.tag)}</span>`:""}${f.img?`<img class="photo" src="${esc(f.img)}" alt="" loading="lazy">`:`<img src="${i%4===0||i%4===3?SPRIGF:SPRIG}" alt="">`}</span><b>${esc(f.n)}</b><span class="pr">${fromP(f).replace(/\.00$/,"")}</span></button>`;
+const tile=(f,i)=>`<button class="tile" type="button" data-fid="${f.id}"><span class="pic">${f.out?`<span class="flag out">Sold out</span>`:f.tag?`<span class="flag">${esc(f.tag)}</span>`:isXmas(f)?`<span class="flag">Christmas</span>`:""}${f.img?`<img class="photo" src="${esc(f.img)}" alt="" loading="lazy">`:`<img src="${i%4===0||i%4===3?SPRIGF:SPRIG}" alt="">`}</span><b>${esc(f.n)}</b><span class="pr">${fromP(f).replace(/\.00$/,"")}</span></button>`;
 $("#featTiles").innerHTML=FLOWERS.filter(f=>!f.out).slice(0,4).map(tile).join("");
 if(!FLOWERS.length)$("#flowerTiles").insertAdjacentHTML("beforebegin",'<p class="empty">Flowers are coming soon.</p>');
 $("#flowerTiles").innerHTML=FLOWERS.map(tile).join("");
@@ -107,22 +112,20 @@ function openDrink(d){
   $("#addBtn").addEventListener("click",()=>{cart.push(line());save();closeSheet();toast(`${d.n} added to your order`)});
 }
 
-function day(days){const d=new Date();d.setDate(d.getDate()+days);return d.toLocaleDateString("en-CA")}
 function openFlower(f){
+  const x=isXmas(f),closed=x&&!xmasOpen().length;
+  if(closed){openSheet(pic(f)+head(esc(f.n),esc(f.d))+`<p class="fine">Christmas orders are closed. Please call the shop and we'll see what we can do.</p><button class="btn block" type="button" disabled>Christmas orders closed</button>`);return}
   openSheet(pic(f)+head(esc(f.n),esc(f.d))+(f.out?addBtn(f):sizeHtml(f,true)+modsHtml(f)+
-    choice("When",[{n:"Soonest",d:0},{n:"Pre-order a date",d:0}])+
-    `<div class="field" id="dateF" hidden><label for="fDate">Date</label><input type="date" id="fDate" min="${day(F.preorderMinDays)}" max="${day(F.preorderMaxDays)}" value="${day(7)}"><small>We'll hold your flowers and text you the day before.</small></div>
-    <div class="field"><label for="fOcc">What's it for?</label><select id="fOcc">${F.occasions.map((o,i)=>`<option value="${i}">${esc(o)}</option>`).join("")}</select></div>
+    (x?`<p class="fine">A Christmas pre-order. You'll choose your pickup or delivery day at checkout: ${xmasOpen().map(fmtDay).map(esc).join(", ")}.</p>`:"")+
+    `<div class="field"><label for="fOcc">What's it for?</label><select id="fOcc">${F.occasions.map((o,i)=>`<option value="${i}">${esc(o)}</option>`).join("")}</select></div>
     <div class="field"><label for="fCard">Card message</label><textarea id="fCard" maxlength="200" placeholder="Optional. We'll handwrite it."></textarea></div>`+
     qtyHtml+addBtn(f)));
   if(f.out)return;
   const root=$("#sheetBody");let q=1;
-  const line=()=>({id:f.id,...readSel(root,f),occasion:+$("#fOcc").value,preorderDate:val(root,"When")===1?$("#fDate").value:null,card:$("#fCard").value.trim(),q});
-  const upd=()=>{$("#q").textContent=q;$("#dateF").hidden=val(root,"When")!==1;$("#addBtn").textContent=`${val(root,"When")?"Pre-order":"Add to order"} · ${money(describe(line()).unit*q)}`};
+  const line=()=>({id:f.id,...readSel(root,f),occasion:+$("#fOcc").value,card:$("#fCard").value.trim(),q});
+  const upd=()=>{$("#q").textContent=q;$("#addBtn").textContent=`${x?"Pre-order":"Add to order"} · ${money(describe(line()).unit*q)}`};
   wire(root,upd);wireMulti(root,f,upd);root.querySelectorAll("[data-q]").forEach(b=>b.addEventListener("click",()=>{q=Math.max(1,Math.min(10,q+ +b.dataset.q));upd()}));upd();
-  $("#addBtn").addEventListener("click",()=>{const l=line();
-    if(l.preorderDate&&(l.preorderDate<day(F.preorderMinDays)||l.preorderDate>day(F.preorderMaxDays))){toast(`Pick a date ${F.preorderMinDays} to ${F.preorderMaxDays} days from today`);return}
-    cart.push(l);save();closeSheet();toast(l.preorderDate?"Pre-order added to your order":`${f.n} added to your order`)});
+  $("#addBtn").addEventListener("click",()=>{cart.push(line());save();closeSheet();toast(x?"Christmas pre-order added. Choose your day at checkout.":`${f.n} added to your order`)});
 }
 
 /* ---------- SQUARE PAYMENTS ---------- */
@@ -138,11 +141,16 @@ function totals(deliver){const s=cart.reduce((a,l)=>a+describe(l).unit*l.q,0),d=
 function openCart(){
   if(!cart.length){openSheet(head("Your order")+`<p class="empty">Nothing in here yet.</p><div class="btns"><a class="btn out" href="#coffee" data-close>Coffee</a><a class="btn out" href="#flowers" data-close>Flowers</a></div>`);return}
   const hasC=cart.some(l=>item(l.id).kind==="coffee"),hasF=cart.some(l=>item(l.id).kind==="flowers");
+  const hasX=cart.some(l=>isXmas(item(l.id))),xd=xmasOpen();
   const draft=store.get("me",{});
+  // Flowers on their own can be for a later day: one of the Christmas days if the order has Christmas items, otherwise soonest or any day in the pre-order window.
+  const whenHtml=!hasF||hasC?"":hasX
+    ?`<div class="field"><label for="cDay">Christmas pickup or delivery day</label><select id="cDay"><option value="">Choose a day</option>${xd.map(d=>`<option value="${d}">${esc(fmtDay(d))}</option>`).join("")}</select><small>We'll have your flowers ready that day and text you the day before.</small></div>`
+    :choice("When",[{n:"Soonest",d:0},{n:"Pick a day",d:0}])+`<div class="field" id="dateF" hidden><label for="cDate">Date</label><input type="date" id="cDate" min="${day(F.preorderMinDays)}" max="${day(F.preorderMaxDays)}" value="${day(7)}"><small>We'll hold your flowers and text you the day before.</small></div>`;
   openSheet(head("Your order")+
     `<div>${cart.map((l,i)=>{const x=describe(l);return `<div class="line"><b>${l.q} × ${esc(x.n)}</b><span class="p">${money(x.unit*l.q)}</span><small>${esc(x.opts)}</small><button class="link rm" type="button" data-rm="${i}">Remove</button></div>`}).join("")}</div>`+
-    (hasF&&!hasC?choice("Flowers",[{n:"I'll pick up",d:0},{n:"Deliver them",d:M.deliveryFee}])+`<div class="field" id="addrF" hidden><label for="cAddr">Delivery address</label><input type="text" id="cAddr" autocomplete="street-address" placeholder="Street and town" value="${esc(draft.addr||"")}"><small>Omemee, Lindsay and nearby.</small></div>`:"")+
-    (hasF&&hasC?`<p class="fine">Flowers in an order with coffee are picked up together. For delivery, order flowers on their own.</p>`:"")+
+    (hasF&&!hasC?choice("Flowers",[{n:"I'll pick up",d:0},{n:"Deliver them",d:M.deliveryFee}])+`<div class="field" id="addrF" hidden><label for="cAddr">Delivery address</label><input type="text" id="cAddr" autocomplete="street-address" placeholder="Street and town" value="${esc(draft.addr||"")}"><small>Omemee, Lindsay and nearby.</small></div>`+whenHtml:"")+
+    (hasF&&hasC?(hasX?`<p class="fine">Christmas flowers are for a later day, so they need their own order. Please remove the coffee or the Christmas flowers and order them separately.</p>`:`<p class="fine">Flowers in an order with coffee are picked up with it today. To pre-order flowers for another day, or have them delivered, order them on their own.</p>`):"")+
     (hasC?`<div class="field"><label for="cTime">Coffee ready at</label><select id="cTime"><option value="asap">As soon as you can (about 10 min)</option>${times().map(t=>`<option value="${t.iso}">${t.label}</option>`).join("")}</select></div>`:"")+
     `<div class="row2"><div class="field"><label for="cName">Name</label><input type="text" id="cName" autocomplete="name" value="${esc(draft.name||"")}"></div><div class="field"><label for="cPhone">Mobile</label><input type="tel" id="cPhone" autocomplete="tel" inputmode="tel" value="${esc(draft.phone||"")}"></div></div>
     <span class="err" id="cErr" hidden></span>
@@ -155,7 +163,8 @@ function openCart(){
     <p class="fine" id="payNote">Card, Apple Pay and Google Pay, processed securely by Square.</p>`);
   const root=$("#sheetBody");
   const deliver=()=>hasF&&!hasC&&val(root,"Flowers")===1;
-  const upd=()=>{const t=totals(deliver());if($("#addrF"))$("#addrF").hidden=!deliver();
+  const fDate=()=>!hasF||hasC?null:hasX?($("#cDay").value||null):val(root,"When")===1?$("#cDate").value:null;
+  const upd=()=>{const t=totals(deliver());if($("#addrF"))$("#addrF").hidden=!deliver();if($("#dateF"))$("#dateF").hidden=val(root,"When")!==1;
     $("#totals").innerHTML=`<div><span>Subtotal</span><span>${money(t.s)}</span></div>${t.d?`<div><span>Delivery</span><span>${money(t.d)}</span></div>`:""}<div><span>HST</span><span>${money(t.t)}</span></div><div class="grand"><span>Total</span><span>${money(t.a)}</span></div>`};
   wire(root,()=>{upd();if(payMethods.length){destroyPayments();$("#payArea").hidden=true;$("#payBtn").textContent="Continue to payment"}});upd();
   root.querySelectorAll("[data-rm]").forEach(b=>b.addEventListener("click",()=>{cart.splice(+b.dataset.rm,1);save();openCart()}));
@@ -167,8 +176,13 @@ function openCart(){
     if(!(digits.length===10||(digits.length===11&&digits[0]==="1"))){err("Please enter a 10-digit mobile number so we can text you.");$("#cPhone").focus();return null}
     const addr=$("#cAddr")?$("#cAddr").value.trim():"";
     if(deliver()&&addr.length<5){err("Please add the delivery address.");$("#cAddr").focus();return null}
+    if(hasX&&hasC){err("Christmas flowers need their own order. Please remove the coffee or the Christmas flowers.");return null}
+    if(hasX&&!xd.length){err("Christmas orders are closed. Please remove the Christmas flowers, or call the shop.");return null}
+    const date=fDate();
+    if(hasX&&!date){err("Please choose your Christmas pickup or delivery day.");$("#cDay").focus();return null}
+    if(date&&!hasX&&!(date>=day(F.preorderMinDays)&&date<=day(F.preorderMaxDays))){err(`Please pick a date ${F.preorderMinDays} to ${F.preorderMaxDays} days from today.`);$("#cDate").focus();return null}
     store.set("me",{name,phone,addr});err("");
-    return {customer:{name,phone},fulfillment:{flowers:deliver()?"delivery":"pickup",address:addr,coffeeTime:hasC?$("#cTime").value:undefined}};
+    return {customer:{name,phone},fulfillment:{flowers:deliver()?"delivery":"pickup",address:addr,date,coffeeTime:hasC?$("#cTime").value:undefined}};
   };
 
   async function pay(method){
@@ -180,10 +194,10 @@ function openCart(){
       const res=await fetch("/api/checkout",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({cart,...d,sourceId:r.token,idempotencyKey:crypto.randomUUID()})});
       const out=await res.json().catch(()=>({error:"Something went wrong. Please try again."}));
       if(!res.ok)throw new Error(out.error);
-      const pre=cart.some(l=>l.preorderDate),when=hasC?$("#cTime").selectedOptions[0].textContent:"";
+      const pre=d.fulfillment.date,when=hasC?$("#cTime").selectedOptions[0].textContent:"";
       cart=[];save();paying=false;destroyPayments();
       openSheet(head("Thanks, "+esc(d.customer.name.split(" ")[0]))+`<div class="done"><span class="kicker">Paid ${money(out.total.amount)}</span>
-        <p>${hasC?`Your drinks will be on the bar under your name${when.startsWith("As soon")?" in about ten minutes":" at "+esc(when)}. `:""}${hasF?(pre?"Your flowers are on hold, and we'll text you the day before. ":d.fulfillment.flowers==="delivery"?"We'll text you when your flowers are on the way. ":"We'll text you when your flowers are ready. "):""}</p>
+        <p>${hasC?`Your drinks will be on the bar under your name${when.startsWith("As soon")?" in about ten minutes":" at "+esc(when)}. `:""}${hasF?(pre?`Your flowers are on hold for ${esc(fmtDay(pre))}${d.fulfillment.flowers==="delivery"?" delivery":""}, and we'll text you the day before. `:d.fulfillment.flowers==="delivery"?"We'll text you when your flowers are on the way. ":"We'll text you when your flowers are ready. "):""}</p>
         ${out.receiptUrl?`<a class="link" href="${esc(out.receiptUrl)}" target="_blank" rel="noopener">View your receipt</a>`:""}
         <button class="btn" type="button" data-close>Done</button></div>`);
     }catch(e){paying=false;$("#payBtn").disabled=false;$("#payBtn").textContent=`Pay ${money(totals(deliver()).a)}`;err(e.message||"Something went wrong. Please try again.")}
