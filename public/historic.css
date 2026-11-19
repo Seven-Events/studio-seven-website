@@ -5,12 +5,12 @@
    small-caps signage. Brand kept: logo, deep forest green, brick red.
    ===================================================================== */
 :root{
-  --plaster:#f7f2e4;          /* painted plaster above the rail */
-  --board:#f3edda;            /* cream beadboard, matched to the shop photos */
-  --board-2:#eee6d0;          /* shaded board, lower wall / footer */
-  --trim:#fbf8ef;             /* trim paint, a touch whiter than the boards */
+  --plaster:#f7f5ee;          /* painted plaster above the rail */
+  --board:#ecede6;            /* cream beadboard, matched to the shop photos */
+  --board-2:#e5e6dd;          /* shaded board, lower wall / footer */
+  --trim:#fbfbf7;             /* trim paint, a touch whiter than the boards */
   --trim-shadow:rgba(92,74,38,.22);
-  --groove:rgba(92,74,38,.09);
+  --groove:rgba(96,100,70,.13);
   --page:var(--plaster); --band1:var(--board); --nav-on:transparent;
   --rule:#ddd2b6; --muted:#5d625a;
   --sc:"IM Fell English SC","Cormorant SC",Georgia,serif;
@@ -26,8 +26,8 @@
     linear-gradient(180deg,rgba(255,252,242,.55),rgba(255,252,242,0) 40%,rgba(120,96,50,.03)),
     repeating-linear-gradient(90deg,
       var(--groove) 0 1px,
-      rgba(92,74,38,.03) 1px 3px,
-      rgba(255,253,246,.5) 3px 5px,
+      rgba(96,100,70,.04) 1px 3px,
+      rgba(255,255,252,.6) 3px 5px,
       rgba(255,253,246,0) 9px 48px);
 }
 /* Milled trim. Stacked bands of paint with highlight and shadow lines read as a moulding profile. */
