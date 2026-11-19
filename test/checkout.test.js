@@ -47,3 +47,15 @@ test("ordering can be paused", async () => {
   delete process.env.ORDERS_OPEN;
   assert.equal(res.status, 503);
 });
+
+test("delivery is priced on the server from the address, and an address too far away is refused", async () => {
+  const { DeliveryError } = require("../lib/delivery");
+  const calls = [];
+  const fake = async (path, b) => { calls.push([path, b]); if (path === "/v2/orders") return { order: { id: "O", total_money: { amount: 1, currency: "CAD" } } }; return { payment: {} }; };
+  const fl = { cart: [{ id: "I_market", v: "V_market_0", q: 1 }], fulfillment: { flowers: "delivery", address: "12 Kent St W, Lindsay" } };
+  const ok = await checkout(input(fl), { square: fake, loadMenu, quoteDelivery: async () => ({ km: 20.1, fee: 2513 }) });
+  assert.equal(ok.status, 200);
+  assert.equal(calls[0][1].order.service_charges[0].amount_money.amount, 2513);
+  const far = await checkout(input(fl), { square: fake, loadMenu, quoteDelivery: async () => { throw new DeliveryError("too far"); } });
+  assert.deepEqual([far.status, far.body.error], [400, "too far"]);
+});

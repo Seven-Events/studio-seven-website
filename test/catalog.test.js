@@ -53,10 +53,13 @@ test("loadMenu pages through the catalog and asks Square for stock of tracked it
   const call = async (path, body) => {
     calls.push([path, body]);
     if (path.startsWith("/v2/catalog/list")) return path.includes("cursor=") ? { objects: fx.objects.slice(half) } : { objects: fx.objects.slice(0, half), cursor: "c2" };
+    if (path.includes("/custom-attributes/")) { const e = new Error("not set"); e.status = 404; throw e; }
     return { counts: fx.counts };
   };
   const m = await loadMenu({ call, locationId: "L1" });
-  assert.equal(calls.length, 3);
+  assert.equal(calls.length, 4); // catalog x2, stock, then the website settings saved at /admin.html
+  assert.deepEqual(m.schedule, { c: [], d: [], cw: [], dw: [] });
+  assert.deepEqual(m.delivery, { perKm: 125, maxKm: 35 });
   assert.deepEqual(calls[2][1].catalog_object_ids, ["V_dried_0", "V_dried_1"]);
   assert.equal(m.flowers.items.length, 6);
 });
