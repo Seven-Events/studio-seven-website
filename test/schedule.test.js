@@ -125,23 +125,35 @@ test("with a Google key, Google's Routes API measures the drive", async () => {
   assert.equal(JSON.parse(seen[1].body).destination.address, "5 Sturgeon Rd, Omemee, Ontario, Canada");
 });
 
-test("a read Square refuses for permission explains which permission; other first-read errors make the field and retry", async () => {
+test("a read Square refuses for permission explains which permission; a field that doesn't exist yet reads as no days off", async () => {
   const restore = env({ STAFF_PASSWORD: "roses", SQUARE_LOCATION_ID: "L1", SQUARE_ACCESS_TOKEN: "t" });
   const fail = (status, code, detail) => { const e = new Error(detail); e.status = status; e.errors = [{ code, detail }]; return e; };
   const denied = await adminSchedule({ password: "roses" }, { square: async () => { throw fail(403, "INSUFFICIENT_SCOPES", "The merchant has not given your application sufficient permissions"); }, wait: noWait, now: NOW });
   assert.equal(denied.status, 502);
   assert.match(denied.body.error, /Merchant profile read and write.*INSUFFICIENT_SCOPES/);
-  const calls = []; let defined = false;
-  const odd = async (path, body, method) => {
-    calls.push(path);
-    if (path === "/v2/locations/custom-attribute-definitions") { defined = true; return {}; }
-    if (!defined) throw fail(400, "BAD_REQUEST", "Custom attribute definition is missing");
-    throw fail(404, "NOT_FOUND", "not set");
-  };
-  const ok = await adminSchedule({ password: "roses" }, { square: odd, wait: noWait, now: NOW });
-  assert.equal(ok.status, 200);
-  assert.deepEqual(ok.body.schedule, { c: [], d: [], cw: [], dw: [] });
+  const fresh = await adminSchedule({ password: "roses" }, { square: async () => { throw fail(400, "BAD_REQUEST", "No matching definition found for value"); }, wait: noWait, now: NOW });
+  assert.equal(fresh.status, 200);
+  assert.deepEqual(fresh.body.schedule, { c: [], d: [], cw: [], dw: [] });
   const other = await adminSchedule({ password: "roses", schedule: {} }, { square: async () => { throw fail(500, "INTERNAL_SERVER_ERROR", "boom"); }, wait: noWait, now: NOW });
   assert.match(other.body.error, /didn't save it.*INTERNAL_SERVER_ERROR: boom/);
   restore();
+});
+
+test("the first save makes the field (checking first), and waits a moment if Square isn't ready with it yet", async () => {
+  const restore = env({ STAFF_PASSWORD: "roses", SQUARE_LOCATION_ID: "L1", SQUARE_ACCESS_TOKEN: "t" });
+  const fail = (status, code, detail) => { const e = new Error(detail); e.status = status; e.errors = [{ code, detail }]; return e; };
+  const calls = []; let defined = false, upserts = 0;
+  const sq = async (path, body, method) => {
+    calls.push([path, method]);
+    if (path === "/v2/locations/custom-attribute-definitions/website_settings") { if (!defined) throw fail(404, "NOT_FOUND", "nf"); return {}; }
+    if (path === "/v2/locations/custom-attribute-definitions") { defined = true; assert.notEqual(body.idempotency_key, "s7-closed-days-definition"); return {}; }
+    upserts++;
+    if (!defined || upserts < 3) throw fail(400, "BAD_REQUEST", "No matching definition found for value");
+    return {};
+  };
+  const res = await adminSchedule({ password: "roses", schedule: { dw: [0] } }, { square: sq, wait: noWait, now: NOW });
+  restore();
+  assert.equal(res.status, 200);
+  assert.equal(upserts, 3);
+  assert.equal(calls.filter((c) => c[0] === "/v2/locations/custom-attribute-definitions").length, 1);
 });
