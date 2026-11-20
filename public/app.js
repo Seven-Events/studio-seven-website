@@ -36,13 +36,15 @@ const xmasOpen=()=>XMAS?XMAS.dates.filter(d=>d>=day(XMAS.orderAheadDays)):[];
 const isXmas=i=>!!(XMAS&&i&&i.xmas);
 /* Closed days and no-delivery days (set by staff at /admin.html, saved in Square). The server checks these too. */
 const SCH=Object.assign({c:[],d:[],cw:[],dw:[]},M.schedule||{});
+// closed = nothing at all; nop = shop closed (no pickup or coffee); nod = no deliveries.
 function dayInfo(d){const wd=new Date(d+"T12:00").getDay(),hit=l=>l.find(r=>d>=r[0]&&d<=r[1]);
-  const c=hit(SCH.c);if(c||SCH.cw.includes(wd))return{closed:true,nod:true,note:c&&c[2]||""};
-  const n=hit(SCH.d);if(n||SCH.dw.includes(wd))return{closed:false,nod:true,note:n&&n[2]||""};
-  return{closed:false,nod:false,note:""}}
-const dayBlocked=(d,deliver)=>{const s=dayInfo(d);return s.closed||(deliver&&s.nod)};
-function dayOptions(list,deliver,sel){return `<option value="">Choose a day</option>`+list.map(d=>{const s=dayInfo(d),off=s.closed||(deliver&&s.nod),
-  tag=s.closed?"closed":off?"no deliveries":"";return `<option value="${d}"${off?" disabled":""}${d===sel&&!off?" selected":""}>${esc(fmtDay(d))}${tag?` (${tag}${s.note?": "+esc(s.note):""})`:""}</option>`}).join("")}
+  const c=hit(SCH.c);if(c)return{closed:true,nop:true,nod:true,note:c[2]||""};
+  const n=hit(SCH.d),nop=SCH.cw.includes(wd),nod=!!n||SCH.dw.includes(wd);
+  return{closed:nop&&nod,nop,nod,note:n&&n[2]||""}}
+const dayBlocked=(d,deliver)=>{const s=dayInfo(d);return s.closed||(deliver?s.nod:s.nop)};
+const whyBlocked=(d,deliver,when)=>{const s=dayInfo(d);return s.closed?`we're closed ${when}`:deliver?`we're not delivering ${when}`:`the shop is closed ${when}`};
+function dayOptions(list,deliver,sel){return `<option value="">Choose a day</option>`+list.map(d=>{const s=dayInfo(d),off=dayBlocked(d,deliver),
+  tag=s.closed?"closed":!off?"":deliver?"no deliveries":"shop closed, delivery only";return `<option value="${d}"${off?" disabled":""}${d===sel&&!off?" selected":""}>${esc(fmtDay(d))}${tag?` (${tag}${s.note?": "+esc(s.note):""})`:""}</option>`}).join("")}
 const dayRange=(a,b)=>{const out=[];for(let i=a;i<=b;i++)out.push(day(i));return out};
 const save=()=>{store.set("cart3",cart);$("#cartN").textContent=cart.reduce((a,l)=>a+l.q,0)};
 
@@ -195,7 +197,7 @@ function openCart(){
     `<div>${cart.map((l,i)=>{const x=describe(l);return `<div class="line"><b>${l.q} × ${esc(x.n)}</b><span class="p">${money(x.unit*l.q)}</span><small>${esc(x.opts)}</small><button class="link rm" type="button" data-rm="${i}">Remove</button></div>`}).join("")}</div>`+
     (hasF&&!hasC?choice("Flowers",[{n:"I'll pick up",d:0},{n:"Deliver them",d:0,s:`${money(DL.perKm)}/km`}])+`<div class="field" id="addrF" hidden><label for="cAddr">Delivery address</label><input type="text" id="cAddr" autocomplete="street-address" placeholder="Street, town and postal code" value="${esc(draft.addr||"")}"><small id="addrQ" aria-live="polite">${money(DL.perKm)} per km of driving from the shop, up to ${DL.maxKm} km.</small></div>`+whenHtml:"")+
     (hasF&&hasC?(hasX?`<p class="fine">Christmas flowers are for a later day, so they need their own order. Please remove the coffee or the Christmas flowers and order them separately.</p>`:`<p class="fine">Flowers in an order with coffee are picked up with it today. To pre-order flowers for another day, or have them delivered, order them on their own.</p>`):"")+
-    (hasC&&dayInfo(day(0)).closed?`<p class="fine">Sorry, we're closed today${dayInfo(day(0)).note?" ("+esc(dayInfo(day(0)).note)+")":""}, so we can't take coffee orders. See you when we're back!</p>`:"")+
+    (hasC&&dayInfo(day(0)).nop?`<p class="fine">Sorry, ${dayInfo(day(0)).closed?"we're":"the shop is"} closed today${dayInfo(day(0)).note?" ("+esc(dayInfo(day(0)).note)+")":""}, so we can't take coffee orders. See you when we're open!</p>`:"")+
     (hasC?`<div class="field"><label for="cTime">Coffee ready at</label><select id="cTime"><option value="asap">As soon as you can (about 10 min)</option>${times().map(t=>`<option value="${t.iso}">${t.label}</option>`).join("")}</select></div>`:"")+
     `<div class="row2"><div class="field"><label for="cName">Name</label><input type="text" id="cName" autocomplete="name" value="${esc(draft.name||"")}"></div><div class="field"><label for="cPhone">Mobile</label><input type="tel" id="cPhone" autocomplete="tel" inputmode="tel" value="${esc(draft.phone||"")}"></div></div>
     <span class="err" id="cErr" hidden></span>
@@ -214,7 +216,7 @@ function openCart(){
     if($("#cDay")){const v=$("#cDay").value;$("#cDay").innerHTML=dayOptions(xd,dv,v)}
     if($("#cDate")){const v=$("#cDate").value;$("#cDate").innerHTML=dayOptions(dayRange(F.preorderMinDays,F.preorderMaxDays),dv,v)}
     const soon=root.querySelector('[data-seg="When"] [data-i="0"]');
-    if(soon){const ok=!dayBlocked(day(0),dv);soon.disabled=!ok;soon.innerHTML=ok?"Soonest":`Soonest<small>${dayInfo(day(0)).closed?"Closed today":"No deliveries today"}</small>`;
+    if(soon){const ok=!dayBlocked(day(0),dv);soon.disabled=!ok;soon.innerHTML=ok?"Soonest":`Soonest<small>${dayInfo(day(0)).closed?"Closed today":dv?"No deliveries today":"Shop closed today"}</small>`;
       if(!ok&&soon.getAttribute("aria-pressed")==="true"){soon.setAttribute("aria-pressed","false");root.querySelector('[data-seg="When"] [data-i="1"]').setAttribute("aria-pressed","true")}}};
   const upd=()=>{days();const t=totals(deliver());if($("#addrF"))$("#addrF").hidden=!deliver();if($("#dateF"))$("#dateF").hidden=val(root,"When")!==1;
     $("#totals").innerHTML=`<div><span>Subtotal</span><span>${money(t.s)}</span></div>${deliver()?`<div><span>Delivery${t.d?` (${DQ.km} km)`:""}</span><span>${t.d?money(t.d):"Add address"}</span></div>`:""}<div><span>HST</span><span>${money(t.t)}</span></div><div class="grand"><span>Total</span><span>${money(t.a)}</span></div>`};
@@ -246,11 +248,11 @@ function openCart(){
     if(deliver()&&!(DQ&&DQ.addr===addr&&DQ.fee!=null)){if(DQ&&DQ.addr===addr&&DQ.error)err(DQ.error);else{err("One moment, we're working out the delivery cost.");quote()}$("#cAddr").focus();return null}
     if(hasX&&hasC){err("Christmas flowers need their own order. Please remove the coffee or the Christmas flowers.");return null}
     if(hasX&&!xd.length){err("Christmas orders are closed. Please remove the Christmas flowers, or call the shop.");return null}
-    if(hasC&&dayInfo(day(0)).closed){err("Sorry, we're closed today, so we can't take coffee orders.");return null}
+    if(hasC&&dayInfo(day(0)).nop){err("Sorry, the shop is closed today, so we can't take coffee orders.");return null}
     const date=fDate();
     if(hasF&&!hasC&&!hasX&&!date&&val(root,"When")===1){err("Please choose a day for your flowers.");$("#cDate").focus();return null}
-    if(date&&dayBlocked(date,deliver())){err(dayInfo(date).closed?"Sorry, we're closed that day. Please pick another day.":"Sorry, we're not delivering that day. Please pick another day, or choose pickup.");return null}
-    if(hasF&&!hasC&&!date&&dayBlocked(day(0),deliver())){err(dayInfo(day(0)).closed?"Sorry, we're closed today. Please pick a day for your flowers.":"Sorry, we're not delivering today. Please pick a day, or choose pickup.");return null}
+    if(date&&dayBlocked(date,deliver())){err(`Sorry, ${whyBlocked(date,deliver(),"that day")}. Please pick another day${dayInfo(date).closed?"":deliver()?", or choose pickup":", or choose delivery"}.`);return null}
+    if(hasF&&!hasC&&!date&&dayBlocked(day(0),deliver())){err(`Sorry, ${whyBlocked(day(0),deliver(),"today")}. Please pick a day for your flowers.`);return null}
     if(hasX&&!date){err("Please choose your Christmas pickup or delivery day.");$("#cDay").focus();return null}
     if(date&&!hasX&&!(date>=day(F.preorderMinDays)&&date<=day(F.preorderMaxDays))){err(`Please pick a date ${F.preorderMinDays} to ${F.preorderMaxDays} days from today.`);$("#cDate").focus();return null}
     store.set("me",{name,phone,addr});err("");

@@ -39,7 +39,7 @@ button:disabled{opacity:.5;cursor:default}
 .week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:16px}
 .week button{padding:0;min-height:48px;text-transform:none;letter-spacing:0;font-size:.9rem}
 .week button[aria-pressed="true"]{background:var(--door);color:#f6f1df}
-.week.closed button[aria-pressed="true"]{background:var(--brick);border-color:var(--brick)}
+.week button[aria-pressed="false"]{color:var(--muted);border-color:var(--rule);text-decoration:line-through}
 .list{list-style:none;margin:0;padding:0}
 .list li{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--rule)}
 .list li:first-child{border-top:0}
@@ -56,6 +56,7 @@ button:disabled{opacity:.5;cursor:default}
 .days div b{display:block;font-size:1rem;font-weight:500}
 .days .c{background:var(--brick-pale);box-shadow:none;color:#7d3a26}
 .days .d{background:var(--door-pale);box-shadow:none;color:#4a4914}
+.days .s{background:#dfe7e3;box-shadow:none;color:var(--forest)}
 .days .h{background:transparent;box-shadow:none;color:var(--muted);font-weight:600;padding:0}
 .key{display:flex;gap:14px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);margin-top:10px}
 .key span::before{content:"";display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px;background:var(--k)}
@@ -104,18 +105,18 @@ button:disabled{opacity:.5;cursor:default}
     </section>
 
     <section class="card">
-      <h2>Every week</h2>
-      <p class="hint">Days you're always closed, or never deliver.</p>
-      <span class="legend">Closed every</span>
-      <div class="week closed" id="cw"></div>
-      <span class="legend">No deliveries every</span>
+      <h2>Weekly schedule</h2>
+      <p class="hint">Tap a day to switch it on or off. The shop and deliveries can run on different days: on a day the shop is closed, customers can still order delivery, and on a day without deliveries, they can still pick up.</p>
+      <span class="legend">Shop open</span>
+      <div class="week" id="cw"></div>
+      <span class="legend">Deliveries</span>
       <div class="week" id="dw"></div>
     </section>
 
     <section class="card">
       <h2>Next four weeks</h2>
       <div class="days" id="cal"></div>
-      <div class="key"><span style="--k:var(--brick-pale)">Closed</span><span style="--k:var(--door-pale)">No deliveries</span></div>
+      <div class="key"><span style="--k:var(--brick-pale)">Closed</span><span style="--k:var(--door-pale)">Pickup only</span><span style="--k:#dfe7e3">Delivery only</span></div>
     </section>
 
     <section class="card">
@@ -165,16 +166,16 @@ button:disabled{opacity:.5;cursor:default}
   $("#pwForm").addEventListener("submit",e=>{e.preventDefault();if($("#pw").value.trim())open()});
 
   function info(d){const wd=new Date(d+"T12:00").getDay(),hit=l=>l.find(r=>d>=r[0]&&d<=r[1]);
-    if(hit(S.c)||S.cw.includes(wd))return"c";if(hit(S.d)||S.dw.includes(wd))return"d";return""}
+    if(hit(S.c))return"c";const nop=S.cw.includes(wd),nod=!!hit(S.d)||S.dw.includes(wd);return nop&&nod?"c":nod?"d":nop?"s":""}
   function render(){
     const items=[...S.c.map(r=>["c",r]),...S.d.map(r=>["d",r])].sort((a,b)=>a[1][0]<b[1][0]?-1:1);
     $("#list").innerHTML=items.length?items.map(([k,r])=>{const one=r[0]===r[1],y=r[0].slice(0,4)!==today.slice(0,4);
       return `<li><div class="what"><span class="pill ${k}">${k==="c"?"Closed":"No deliveries"}</span><b>${esc(pretty(r[0],y))}${one?"":" to "+esc(pretty(r[1],y))}</b>${r[2]?`<small>${esc(r[2])}</small>`:""}</div><button type="button" data-rm="${k}|${r[0]}|${r[1]}">Remove</button></li>`}).join("")
       :`<li><p class="empty">No days off coming up.</p></li>`;
-    for(const k of ["cw","dw"])$("#"+k).innerHTML=WD.map((n,i)=>`<button type="button" data-w="${k}" data-i="${i}" aria-pressed="${S[k].includes(i)}">${n}</button>`).join("");
+    for(const k of ["cw","dw"])$("#"+k).innerHTML=WD.map((n,i)=>`<button type="button" data-w="${k}" data-i="${i}" aria-pressed="${!S[k].includes(i)}">${n}</button>`).join("");
     const start=new Date();start.setDate(start.getDate()-start.getDay());let cal=WD.map(n=>`<div class="h">${n[0]}</div>`).join("");
     for(let i=0;i<28;i++){const d=new Date(start);d.setDate(start.getDate()+i);const s=iso(d),k=s<today?"":info(s);
-      cal+=`<div class="${k}"${s<today?' style="opacity:.4"':""}><b>${d.getDate()}</b>${k==="c"?"Closed":k==="d"?"Pickup":""}</div>`}
+      cal+=`<div class="${k}"${s<today?' style="opacity:.4"':""}><b>${d.getDate()}</b>${k==="c"?"Closed":k==="d"?"Pickup":k==="s"?"Deliver":""}</div>`}
     $("#cal").innerHTML=cal;
     const rate=Math.round(parseFloat($("#rate").value)*100),max=parseFloat($("#max").value);
     $("#example").textContent=rate>=0&&max>0?`For example, a 20 km delivery costs $${(20*rate/100).toFixed(2)}, and the furthest, ${max} km, costs $${(max*rate/100).toFixed(2)}.`:"";

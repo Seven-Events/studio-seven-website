@@ -16,11 +16,24 @@ const sched = normalize({ c: [["2027-05-10", "2027-05-12", "Family trip"], ["202
 const menu = { ...buildMenu(fx.objects, fx.counts, "L1"), schedule: sched };
 const order = (fulfillment, cart = flowers, now = NOW) => buildSquareOrder({ cart, customer: cust, fulfillment, menu, delivery: { km: 10, fee: 1250 }, locationId: "L1", now });
 
-test("days are closed, no-delivery, or open; weekly days repeat", () => {
-  assert.deepEqual(dayStatus(sched, "2027-05-11"), { closed: true, noDelivery: true, note: "Family trip" });
-  assert.deepEqual(dayStatus(sched, "2027-05-14"), { closed: false, noDelivery: true, note: "" });
+test("days are closed, no-delivery, or open; weekly shop and delivery days are separate", () => {
+  assert.deepEqual(dayStatus(sched, "2027-05-11"), { closed: true, noPickup: true, noDelivery: true, note: "Family trip" });
+  assert.deepEqual(dayStatus(sched, "2027-05-14"), { closed: false, noPickup: false, noDelivery: true, note: "" });
   assert.equal(dayStatus(sched, "2027-05-16").noDelivery, true); // a Sunday
-  assert.deepEqual(dayStatus(sched, "2027-05-13"), { closed: false, noDelivery: false, note: "" });
+  assert.deepEqual(dayStatus(sched, "2027-05-13"), { closed: false, noPickup: false, noDelivery: false, note: "" });
+  const weekly = normalize({ cw: [0, 1], dw: [0, 3] }, NOW); // shop shut Sun + Mon; no deliveries Sun + Wed
+  assert.deepEqual(dayStatus(weekly, "2027-05-16"), { closed: true, noPickup: true, noDelivery: true, note: "" }); // Sunday: nothing
+  assert.deepEqual(dayStatus(weekly, "2027-05-17"), { closed: false, noPickup: true, noDelivery: false, note: "" }); // Monday: delivery only
+  assert.deepEqual(dayStatus(weekly, "2027-05-19"), { closed: false, noPickup: false, noDelivery: true, note: "" }); // Wednesday: pickup only
+});
+
+test("on a day the shop is shut but deliveries run, delivery is fine and pickup or coffee isn't", () => {
+  const m = { ...menu, schedule: normalize({ cw: [1] }, NOW) }; // Mondays
+  const o = (fulfillment, cart = flowers) => buildSquareOrder({ cart, customer: cust, fulfillment, menu: m, delivery: { km: 10, fee: 1250 }, locationId: "L1", now: NOW });
+  assert.equal(o({ flowers: "delivery", address: "1 Main St", date: "2027-05-10" }).fulfillments[0].type, "DELIVERY");
+  assert.throws(() => o({ flowers: "pickup", date: "2027-05-10" }), /shop is closed on Monday, May 10.*choose delivery/);
+  assert.throws(() => o({ coffeeTime: "asap" }, [latte]), /shop is closed today/); // NOW is a Monday
+  assert.equal(o({ flowers: "delivery", address: "1 Main St" }).fulfillments[0].delivery_details.schedule_type, "ASAP");
 });
 
 test("tidying drops past and impossible days, swaps backwards ranges and keeps the delivery rate", () => {
