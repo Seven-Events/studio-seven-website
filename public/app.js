@@ -216,7 +216,7 @@ function openCart(){
     :choice("When",[{n:"Soonest",d:0},{n:"Pick a day",d:0}])+`<div class="field" id="dateF" hidden><label for="cDate">Day</label><select id="cDate">${dayOptions(dayRange(F.preorderMinDays,F.preorderMaxDays),false)}</select><small>We'll hold your flowers and text you the day before.</small></div>`;
   openSheet(head("Your order")+
     `<div>${cart.map((l,i)=>{const x=describe(l);return `<div class="line"><b>${l.q} × ${esc(x.n)}</b><span class="p">${money(x.unit*l.q)}</span><small>${esc(x.opts)}</small><button class="link rm" type="button" data-rm="${i}">Remove</button></div>`}).join("")}</div>`+
-    (hasF&&!hasC?choice("Flowers",[{n:"I'll pick up",d:0},{n:"Deliver them",d:0,s:`${money(DL.perKm)}/km${DL.minFee?`, ${short(DL.minFee)} min`:""}`}])+`<div class="field" id="addrF" hidden><label for="cAddr">Delivery address</label><input type="text" id="cAddr" autocomplete="street-address" placeholder="Street, town and postal code" value="${esc(draft.addr||"")}"><small id="addrQ" aria-live="polite">${money(DL.perKm)} per km of driving from the shop${DL.minFee?` (${short(DL.minFee)} minimum)`:""}, up to ${DL.maxKm} km.</small></div>`+whenHtml:"")+
+    (hasF&&!hasC?choice("Flowers",[{n:"I'll pick up",d:0},{n:"Deliver them",d:0,s:`${money(DL.perKm)}/km${DL.minFee?`, ${short(DL.minFee)} min`:""}`}])+`<div class="field addr" id="addrF" hidden><label for="cAddr">Delivery address</label><input type="text" id="cAddr" autocomplete="street-address" role="combobox" aria-autocomplete="list" aria-controls="addrList" aria-expanded="false" placeholder="Start typing your street address" value="${esc(draft.addr||"")}"><ul class="sugg" id="addrList" role="listbox" hidden></ul><small id="addrQ" aria-live="polite">${money(DL.perKm)} per km of driving from the shop${DL.minFee?` (${short(DL.minFee)} minimum)`:""}, up to ${DL.maxKm} km.</small></div>`+whenHtml:"")+
     (hasF&&hasC?(hasX?`<p class="fine">Christmas flowers are for a later day, so they need their own order. Please remove the coffee or the Christmas flowers and order them separately.</p>`:`<p class="fine">Flowers in an order with coffee are picked up with it today. To pre-order flowers for another day, or have them delivered, order them on their own.</p>`):"")+
     (hasC&&dayInfo(day(0)).nop?`<p class="fine">Sorry, ${dayInfo(day(0)).closed?"we're":"the shop is"} closed today${dayInfo(day(0)).note?" ("+esc(dayInfo(day(0)).note)+")":""}, so we can't take coffee orders. See you when we're open!</p>`:"")+
     (hasC?`<div class="field"><label for="cTime">Coffee ready at</label><select id="cTime"><option value="asap">As soon as you can (about 10 min)</option>${times().map(t=>`<option value="${t.iso}">${t.label}</option>`).join("")}</select></div>`:"")+
@@ -257,7 +257,24 @@ function openCart(){
     showQ();upd();resetPay()}
   function showQ(){if(!DQ||!addrQ)return;addrQ.classList.toggle("bad",!!DQ.error);
     addrQ.textContent=DQ.error||(DQ.busy?"Working out the delivery cost…":`${DQ.km} km from the shop: ${money(DQ.fee)} delivery.${DQ.place?" We found "+DQ.place+".":""}`)}
-  if($("#cAddr")){$("#cAddr").addEventListener("input",()=>{clearTimeout(qTimer);qTimer=setTimeout(quote,900)});$("#cAddr").addEventListener("change",()=>{clearTimeout(qTimer);quote()})}
+  // Address suggestions as they type (api/address.js). Picking one fills the field and prices the delivery straight away.
+  const aIn=$("#cAddr"),aList=$("#addrList");let sTimer=0,sSeq=0,sItems=[],sAt=-1;
+  const closeSugg=()=>{aList.hidden=true;aIn.setAttribute("aria-expanded","false");sAt=-1};
+  const paintSugg=()=>{aList.innerHTML=sItems.map((s,i)=>`<li role="option" id="sg${i}" aria-selected="${i===sAt}" data-i="${i}">${esc(s.label)}</li>`).join("");
+    aList.hidden=!sItems.length;aIn.setAttribute("aria-expanded",String(!!sItems.length));if(sAt>=0)aIn.setAttribute("aria-activedescendant","sg"+sAt);else aIn.removeAttribute("aria-activedescendant")};
+  const pick=i=>{const s=sItems[i];if(!s)return;aIn.value=s.label;sItems=[];closeSugg();clearTimeout(qTimer);quote()};
+  async function suggest(){const q=aIn.value.trim(),n=++sSeq;if(q.length<3){sItems=[];closeSugg();return}
+    try{const r=await fetch("/api/address",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({q})});const out=await r.json();
+      if(n!==sSeq||document.activeElement!==aIn)return;sItems=(out.suggestions||[]).filter(s=>s.label.toLowerCase()!==q.toLowerCase());sAt=-1;paintSugg()}catch(e){}}
+  if(aIn){
+    aIn.addEventListener("input",()=>{clearTimeout(qTimer);clearTimeout(sTimer);sTimer=setTimeout(suggest,250);qTimer=setTimeout(quote,1800)});
+    aIn.addEventListener("keydown",e=>{if(aList.hidden)return;
+      if(e.key==="ArrowDown"||e.key==="ArrowUp"){e.preventDefault();sAt=e.key==="ArrowDown"?(sAt+1>=sItems.length?-1:sAt+1):(sAt-1<-1?sItems.length-1:sAt-1);paintSugg()}
+      else if(e.key==="Enter"&&sAt>=0){e.preventDefault();pick(sAt)}else if(e.key==="Escape")closeSugg()});
+    aList.addEventListener("mousedown",e=>e.preventDefault()); // keep focus in the field while tapping a suggestion
+    aList.addEventListener("click",e=>{const li=e.target.closest("li");if(li)pick(+li.dataset.i)});
+    aIn.addEventListener("blur",()=>{setTimeout(closeSugg,100);clearTimeout(qTimer);quote()});
+  }
   root.querySelectorAll("[data-rm]").forEach(b=>b.addEventListener("click",()=>{cart.splice(+b.dataset.rm,1);save();openCart()}));
   const err=m=>{$("#cErr").textContent=m;$("#cErr").hidden=!m;if(m)$("#cErr").scrollIntoView({block:"center",behavior:"smooth"})};
 

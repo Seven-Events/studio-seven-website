@@ -138,7 +138,7 @@ Capital letters don't matter, so "hot drinks" in Square works too, but the spell
 ## How orders work
 
 - Coffee is pickup only, either as soon as possible (ready in about 10 minutes) or at a chosen time up to about 3.5 hours ahead.
-- Flowers can be picked up or delivered. Delivery costs $1.25 per km of one-way driving from the shop (41 King St E, Omemee), with a $10 minimum, up to 35 km; all three can be changed at `/admin.html`. Customers see the distance and price as soon as they type their address, and the server works it out again at payment, so the browser can't change it. At checkout, customers choose "Soonest" or pick a day 2 to 60 days ahead. One order has one date, because each Square order holds one pickup or delivery.
+- Flowers can be picked up or delivered. Delivery costs $1.25 per km of one-way driving from the shop (41 King St E, Omemee), with a $10 minimum, up to 35 km; all three can be changed at `/admin.html`. As customers type their address, they get address suggestions (from Photon, a free OpenStreetMap service), and they see the distance and price as soon as they pick one, and the server works it out again at payment, so the browser can't change it. At checkout, customers choose "Soonest" or pick a day 2 to 60 days ahead. One order has one date, because each Square order holds one pickup or delivery.
 - Orders with Christmas items must be for one of the Christmas days (see "Everyday changes").
 - An order with coffee and flowers is a single pickup today. To have flowers delivered or pre-order them for another day, customers order the flowers separately.
 - HST (13%) is added to each order, and Square calculates the total, so the amount charged always matches Square's own calculation.
