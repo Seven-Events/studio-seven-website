@@ -46,6 +46,27 @@ const whyBlocked=(d,deliver,when)=>{const s=dayInfo(d);return s.closed?`we're cl
 function dayOptions(list,deliver,sel){return `<option value="">Choose a day</option>`+list.map(d=>{const s=dayInfo(d),off=dayBlocked(d,deliver),
   tag=s.closed?"closed":!off?"":deliver?"no deliveries":"shop closed, delivery only";return `<option value="${d}"${off?" disabled":""}${d===sel&&!off?" selected":""}>${esc(fmtDay(d))}${tag?` (${tag}${s.note?": "+esc(s.note):""})`:""}</option>`}).join("")}
 const dayRange=(a,b)=>{const out=[];for(let i=a;i<=b;i++)out.push(day(i));return out};
+/* Draws a day list (<select>) as a tappable month calendar. The select stays the source of truth (hidden). */
+function drawCal(sel){if(!sel)return;let box=sel.nextElementSibling;
+  if(!box||!box.classList.contains("cal")){box=document.createElement("div");box.className="cal";sel.after(box);sel.hidden=true;
+    box.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.disabled)return;
+      if(b.dataset.nav){box.dataset.m=b.dataset.nav;drawCal(sel);return}
+      if(b.classList.contains("off")){box.querySelector(".cal-s").innerHTML=`<b>${esc(fmtDay(b.dataset.d))}</b>: ${esc(b.dataset.why||"not available")}.`;return}
+      sel.value=b.dataset.d;sel.dispatchEvent(new Event("change",{bubbles:true}));drawCal(sel)})}
+  const opts=[...sel.options].filter(o=>o.value);
+  if(!opts.length){box.innerHTML=`<p class="cal-s">No days available.</p>`;return}
+  const byDay=new Map(opts.map(o=>[o.value,o])),months=[...new Set(opts.map(o=>o.value.slice(0,7)))];
+  let m=box.dataset.m;if(!months.includes(m))m=(sel.value||(opts.find(o=>!o.disabled)||opts[0]).value).slice(0,7);box.dataset.m=m;
+  const i=months.indexOf(m),[y,mo]=m.split("-").map(Number),lead=new Date(y,mo-1,1).getDay(),dim=new Date(y,mo,0).getDate(),now=day(0);
+  let cells="<span></span>".repeat(lead);
+  for(let d=1;d<=dim;d++){const ds=`${m}-${String(d).padStart(2,"0")}`,o=byDay.get(ds);
+    if(!o){cells+=`<span>${d}</span>`;continue}
+    const why=(o.textContent.match(/\(([^)]*)\)$/)||[])[1]||"";
+    cells+=`<button type="button" data-d="${ds}" class="${o.disabled?"off":""}${ds===now?" today":""}" aria-pressed="${sel.value===ds}"${o.disabled?` aria-disabled="true" data-why="${esc(why)}"`:""} aria-label="${esc(fmtDay(ds))}${why?", "+esc(why):""}">${d}</button>`}
+  const name=new Date(y,mo-1,1).toLocaleDateString("en-CA",{month:"long",year:"numeric"});
+  box.innerHTML=`<div class="cal-h"><button type="button" class="cal-nav" data-nav="${months[i-1]||""}"${i?"":" disabled"} aria-label="Previous month">‹</button><b>${esc(name)}</b><button type="button" class="cal-nav" data-nav="${months[i+1]||""}"${i<months.length-1?"":" disabled"} aria-label="Next month">›</button></div>
+    <div class="cal-w">${["S","M","T","W","T","F","S"].map(x=>`<span>${x}</span>`).join("")}</div><div class="cal-g">${cells}</div>
+    <p class="cal-s" aria-live="polite">${sel.value?`Your day: <b>${esc(fmtDay(sel.value))}</b>`:"Tap a day. Crossed-out days aren't available."}</p>`}
 const save=()=>{store.set("cart3",cart);$("#cartN").textContent=cart.reduce((a,l)=>a+l.q,0)};
 
 /* ---------- ROUTING ---------- */
@@ -215,6 +236,7 @@ function openCart(){
   const days=()=>{const dv=deliver();
     if($("#cDay")){const v=$("#cDay").value;$("#cDay").innerHTML=dayOptions(xd,dv,v)}
     if($("#cDate")){const v=$("#cDate").value;$("#cDate").innerHTML=dayOptions(dayRange(F.preorderMinDays,F.preorderMaxDays),dv,v)}
+    drawCal($("#cDay"));drawCal($("#cDate"));
     const soon=root.querySelector('[data-seg="When"] [data-i="0"]');
     if(soon){const ok=!dayBlocked(day(0),dv);soon.disabled=!ok;soon.innerHTML=ok?"Soonest":`Soonest<small>${dayInfo(day(0)).closed?"Closed today":dv?"No deliveries today":"Shop closed today"}</small>`;
       if(!ok&&soon.getAttribute("aria-pressed")==="true"){soon.setAttribute("aria-pressed","false");root.querySelector('[data-seg="When"] [data-i="1"]').setAttribute("aria-pressed","true")}}};
