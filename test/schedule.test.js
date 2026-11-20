@@ -170,3 +170,23 @@ test("the first save makes the field (checking first), and waits a moment if Squ
   assert.equal(upserts, 3);
   assert.equal(calls.filter((c) => c[0] === "/v2/locations/custom-attribute-definitions").length, 1);
 });
+
+test("saves send version -1, and fall back to the current version if Square insists", async () => {
+  const restore = env({ STAFF_PASSWORD: "roses", SQUARE_LOCATION_ID: "L1", SQUARE_ACCESS_TOKEN: "t" });
+  const fail = (status, code, detail, field) => { const e = new Error(detail); e.status = status; e.errors = [{ code, detail, field }]; return e; };
+  const sent = [];
+  const easy = async (path, body, method) => { if (method !== "GET") sent.push(body.custom_attribute.version); return {}; };
+  assert.equal((await adminSchedule({ password: "roses", schedule: {} }, { square: easy, wait: noWait, now: NOW })).status, 200);
+  assert.deepEqual(sent, [-1]);
+  const tried = [];
+  const strict = async (path, body, method) => {
+    if (method === "GET") return { custom_attribute: { value: "{}", version: 4 } };
+    tried.push(body.custom_attribute.version);
+    if (body.custom_attribute.version !== 4) throw fail(400, "BAD_REQUEST", "Missing required parameter `version`", "version");
+    return {};
+  };
+  const res = await adminSchedule({ password: "roses", schedule: { cw: [0] } }, { square: strict, wait: noWait, now: NOW });
+  restore();
+  assert.equal(res.status, 200);
+  assert.deepEqual(tried, [-1, 4]);
+});
