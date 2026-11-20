@@ -124,3 +124,24 @@ test("with a Google key, Google's Routes API measures the drive", async () => {
   assert.match(seen[0], /routes.googleapis.com/);
   assert.equal(JSON.parse(seen[1].body).destination.address, "5 Sturgeon Rd, Omemee, Ontario, Canada");
 });
+
+test("a read Square refuses for permission explains which permission; other first-read errors make the field and retry", async () => {
+  const restore = env({ STAFF_PASSWORD: "roses", SQUARE_LOCATION_ID: "L1", SQUARE_ACCESS_TOKEN: "t" });
+  const fail = (status, code, detail) => { const e = new Error(detail); e.status = status; e.errors = [{ code, detail }]; return e; };
+  const denied = await adminSchedule({ password: "roses" }, { square: async () => { throw fail(403, "INSUFFICIENT_SCOPES", "The merchant has not given your application sufficient permissions"); }, wait: noWait, now: NOW });
+  assert.equal(denied.status, 502);
+  assert.match(denied.body.error, /Merchant profile read and write.*INSUFFICIENT_SCOPES/);
+  const calls = []; let defined = false;
+  const odd = async (path, body, method) => {
+    calls.push(path);
+    if (path === "/v2/locations/custom-attribute-definitions") { defined = true; return {}; }
+    if (!defined) throw fail(400, "BAD_REQUEST", "Custom attribute definition is missing");
+    throw fail(404, "NOT_FOUND", "not set");
+  };
+  const ok = await adminSchedule({ password: "roses" }, { square: odd, wait: noWait, now: NOW });
+  assert.equal(ok.status, 200);
+  assert.deepEqual(ok.body.schedule, { c: [], d: [], cw: [], dw: [] });
+  const other = await adminSchedule({ password: "roses", schedule: {} }, { square: async () => { throw fail(500, "INTERNAL_SERVER_ERROR", "boom"); }, wait: noWait, now: NOW });
+  assert.match(other.body.error, /didn't save it.*INTERNAL_SERVER_ERROR: boom/);
+  restore();
+});
