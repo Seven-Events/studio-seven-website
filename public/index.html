@@ -220,6 +220,23 @@ input:focus,select:focus,textarea:focus{border-color:var(--forest);outline:none}
 .totals div{display:flex;justify-content:space-between}
 .totals .grand{font-weight:600;font-size:1.05rem;padding-top:8px;border-top:1.5px solid var(--forest);margin-top:6px}
 .fine{color:var(--muted);font-size:.8rem}
+/* Checkout calendar: draws the day list (a hidden select) as a month grid */
+.cal{border:1.5px solid var(--rule);border-radius:14px;padding:12px 10px 10px;background:var(--ivory)}
+.cal-h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 2px 10px}
+.cal-h b{font-family:var(--display);font-weight:400;font-size:1.45rem;line-height:1;color:var(--forest)}
+.cal-nav{width:40px;height:40px;border-radius:10px;border:1.5px solid var(--forest);background:transparent;color:var(--forest);font-size:1.25rem;line-height:1;cursor:pointer}
+.cal-nav:disabled{opacity:.2;cursor:default}
+.cal-w,.cal-g{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;text-align:center}
+.cal-w span{font-size:.7rem;font-weight:600;letter-spacing:.08em;color:var(--muted);padding-bottom:4px}
+.cal-g>span{display:grid;place-items:center;min-height:42px;font-size:.9rem;color:#cfc8b6}
+.cal-g button{min-height:42px;border:0;border-radius:10px;background:transparent;color:var(--forest);font:600 .95rem var(--sans);cursor:pointer;padding:0}
+.cal-g button:hover{background:var(--ivory-2)}
+.cal-g button[aria-pressed="true"]{background:var(--forest);color:var(--ivory)}
+.cal-g button.off{color:var(--muted);opacity:.45;text-decoration:line-through;font-weight:400}
+.cal-g button.off:hover{background:transparent}
+.cal-g button.today{box-shadow:inset 0 0 0 1.5px var(--rule)}
+.cal-s{margin:10px 2px 0;font-size:.86rem;color:var(--muted);min-height:1.3em}
+.cal-s b{color:var(--forest)}
 .empty{color:var(--muted)}
 
 #card-container{min-height:90px}
