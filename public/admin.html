@@ -125,6 +125,7 @@ button:disabled{opacity:.5;cursor:default}
       <div class="grid2">
         <div class="field"><label for="rate">Per km ($)</label><input type="number" id="rate" inputmode="decimal" min="0" max="20" step="0.05"></div>
         <div class="field"><label for="max">Up to (km)</label><input type="number" id="max" inputmode="decimal" min="1" max="200" step="1"></div>
+        <div class="field"><label for="min">Minimum ($)</label><input type="number" id="min" inputmode="decimal" min="0" max="200" step="1"></div>
       </div>
       <p class="hint" id="example" style="margin:0"></p>
     </section>
@@ -143,7 +144,7 @@ button:disabled{opacity:.5;cursor:default}
   const iso=d=>d.toLocaleDateString("en-CA");
   const today=iso(new Date());
   const pretty=(d,y)=>new Date(d+"T12:00").toLocaleDateString("en-CA",{weekday:"short",month:"short",day:"numeric",...(y?{year:"numeric"}:{})});
-  let S=null, DEF={perKm:125,maxKm:35}, dirty=false, kind="c";
+  let S=null, DEF={perKm:125,maxKm:35,minFee:1000}, dirty=false, kind="c";
 
   function status(msg,cls){const s=$("#status");s.textContent=msg;s.className="status"+(cls?" "+cls:"")}
   function changed(){dirty=true;status("Not saved yet");render()}
@@ -159,7 +160,7 @@ button:disabled{opacity:.5;cursor:default}
   async function open(){
     try{const out=await api({});setPw(getPw()||$("#pw").value.trim());S=out.schedule;DEF=out.defaults||DEF;
       $("#pwForm").hidden=true;$("#app").hidden=false;$("#bar").hidden=false;
-      $("#rate").value=((S.r??DEF.perKm)/100).toFixed(2);$("#max").value=S.mx??DEF.maxKm;
+      $("#rate").value=((S.r??DEF.perKm)/100).toFixed(2);$("#max").value=S.mx??DEF.maxKm;$("#min").value=((S.mn??DEF.minFee??0)/100).toFixed(2);
       status("Everything's saved","ok");render()}
     catch(e){if(!$("#pwForm").hidden||!getPw()){$("#pwMsg").textContent=e.message;$("#pwMsg").style.color="var(--brick)"}showLogin()}
   }
@@ -177,8 +178,9 @@ button:disabled{opacity:.5;cursor:default}
     for(let i=0;i<28;i++){const d=new Date(start);d.setDate(start.getDate()+i);const s=iso(d),k=s<today?"":info(s);
       cal+=`<div class="${k}"${s<today?' style="opacity:.4"':""}><b>${d.getDate()}</b>${k==="c"?"Closed":k==="d"?"Pickup":k==="s"?"Deliver":""}</div>`}
     $("#cal").innerHTML=cal;
-    const rate=Math.round(parseFloat($("#rate").value)*100),max=parseFloat($("#max").value);
-    $("#example").textContent=rate>=0&&max>0?`For example, a 20 km delivery costs $${(20*rate/100).toFixed(2)}, and the furthest, ${max} km, costs $${(max*rate/100).toFixed(2)}.`:"";
+    const rate=Math.round(parseFloat($("#rate").value)*100),max=parseFloat($("#max").value),mn=Math.round((parseFloat($("#min").value)||0)*100);
+    const cost=km=>"$"+(Math.max(Math.round(km*rate),mn)/100).toFixed(2);
+    $("#example").textContent=rate>=0&&max>0?`For example, a 3 km delivery costs ${cost(3)}, 20 km costs ${cost(20)}, and the furthest, ${max} km, costs ${cost(max)}.`:"";
   }
 
   document.addEventListener("click",e=>{
@@ -196,14 +198,15 @@ button:disabled{opacity:.5;cursor:default}
     $("#from").value="";$("#to").value="";$("#note").value="";changed();
   });
   $("#from").addEventListener("change",()=>{if(!$("#to").value||$("#to").value<$("#from").value)$("#to").min=$("#from").value});
-  $("#rate").addEventListener("input",changed);$("#max").addEventListener("input",changed);
+  $("#rate").addEventListener("input",changed);$("#max").addEventListener("input",changed);$("#min").addEventListener("input",changed);
 
   $("#save").addEventListener("click",async()=>{
-    const rate=parseFloat($("#rate").value),max=parseFloat($("#max").value);
+    const rate=parseFloat($("#rate").value),max=parseFloat($("#max").value),mn=parseFloat($("#min").value)||0;
+    if(!(mn>=0&&mn<=200)){status("Minimum should be between $0 and $200.","err");$("#min").focus();return}
     if(!(rate>=0&&rate<=20)){status("Per km should be between $0 and $20.","err");$("#rate").focus();return}
     if(!(max>=1&&max<=200)){status("Up to should be between 1 and 200 km.","err");$("#max").focus();return}
     $("#save").disabled=true;status("Saving…");
-    try{const out=await api({schedule:{...S,r:Math.round(rate*100),mx:max}});S=out.schedule;dirty=false;status("Saved. Live within a minute.","ok");render()}
+    try{const out=await api({schedule:{...S,r:Math.round(rate*100),mx:max,mn:Math.round(mn*100)}});S=out.schedule;dirty=false;status("Saved. Live within a minute.","ok");render()}
     catch(e){status(e.message,"err")}
     $("#save").disabled=false;
   });

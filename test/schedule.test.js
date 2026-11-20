@@ -124,7 +124,7 @@ test("delivery past the furthest distance, or to an address we can't pin down, i
   await assert.rejects(quoteDelivery("1 Nowhere Lane", null, { fetch: fakeMaps({ found: false }).f }), /couldn't find that address/);
   await assert.rejects(quoteDelivery("x", null, { fetch: fakeMaps().f }), /add the delivery address/);
   restore();
-  assert.deepEqual(deliveryRules({ r: 100 }), { perKm: 100, maxKm: 35, from: "41 King St E, Omemee, ON K0L 2W0", lat: 44.3003656, lon: -78.5545074 });
+  assert.deepEqual(deliveryRules({ r: 100 }), { perKm: 100, maxKm: 35, minFee: 1000, from: "41 King St E, Omemee, ON K0L 2W0", lat: 44.3003656, lon: -78.5545074 });
 });
 
 test("with a Google key, Google's Routes API measures the drive", async () => {
@@ -189,4 +189,16 @@ test("saves send version -1, and fall back to the current version if Square insi
   restore();
   assert.equal(res.status, 200);
   assert.deepEqual(tried, [-1, 4]);
+});
+
+test("short deliveries cost the minimum, which can be changed at the admin page", async () => {
+  const restore = env({ GOOGLE_MAPS_API_KEY: undefined });
+  const near = await quoteDelivery("3 Sturgeon Rd, Omemee", null, { fetch: fakeMaps({ meters: 3000 }).f });
+  assert.deepEqual([near.km, near.fee], [3, 1000]); // 3 km x $1.25 = $3.75, so the $10 minimum
+  const lower = await quoteDelivery("4 Sturgeon Rd, Omemee", { mn: 500 }, { fetch: fakeMaps({ meters: 3000 }).f });
+  assert.equal(lower.fee, 500);
+  const far = await quoteDelivery("9 Kent St W, Lindsay", null, { fetch: fakeMaps({ meters: 20100 }).f });
+  assert.equal(far.fee, 2513); // above the minimum, so per km
+  assert.equal(normalize({ mn: 1500 }, NOW).mn, 1500);
+  restore();
 });
