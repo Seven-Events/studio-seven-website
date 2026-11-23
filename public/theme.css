@@ -138,3 +138,6 @@ a.tile{text-decoration:none;color:inherit}
 
 /* =========== Product pop-up: the whole photo, fitted inside a square =========== */
 #sheet .sheet-pic{width:min(100%,420px);margin:0 auto;aspect-ratio:1/1;object-fit:contain;object-position:50% 50%!important;background:var(--ivory-2);border-radius:0;box-shadow:0 0 0 1px rgba(92,74,38,.25)}
+
+/* =========== Coffee menu on desktop: the category heading spans both columns, so the two columns start level =========== */
+@media (min-width:900px){.menu h2{column-span:all;-webkit-column-span:all}}
