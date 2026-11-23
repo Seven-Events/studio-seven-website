@@ -115,7 +115,10 @@ const feat=allDrinks().filter(d=>d.tag&&!d.out);
 $("#featDrinks").innerHTML=feat.concat(allDrinks().filter(d=>!d.tag&&!d.out)).slice(0,4).map(d=>`<button class="drink" type="button" data-id="${d.id}"><span class="nm">${esc(d.n)}</span><span class="dots"></span><span class="pr">${money(minP(d))}</span></button>`).join("");
 const cats=Object.keys(COFFEE);
 $("#coffeeTabs").innerHTML=cats.map((c,i)=>`<button class="cat" type="button" aria-pressed="${i===0}" data-cat="${i}">${esc(c)}</button>`).join("");
-$("#coffeeList").innerHTML=cats.map((c,ci)=>`<h2 id="cat-${ci}">${esc(c)}</h2>`+COFFEE[c].map(i=>`<button class="dish${i.out?" out":""}" type="button" data-id="${i.id}"><span class="r"><span class="nm">${esc(i.n)}${i.tag?`<span class="tagx">${esc(i.tag)}</span>`:""}</span><span class="dots"></span><span class="pr">${priceLabel(i)}</span></span>${i.d?`<span class="ds">${esc(i.d)}</span>`:""}</button>`).join("")).join("");
+/* a small square photo beside each drink: the item's first photo in Square, or a drawn cup until one is added */
+const CUP=`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20h22v8a11 11 0 0 1-22 0z"/><path d="M33 22h2.5a4.5 4.5 0 0 1 0 9H32"/><path d="M8 41h28"/><path d="M18 9c-1.5 2 1.5 3.5 0 6M24 8c-1.5 2 1.5 3.5 0 6"/></svg>`;
+const thumb=i=>i.img?`<span class="thumb"><img src="${esc(i.img)}" style="object-position:${esc(i.focus||"50% 50%")}" alt="" loading="lazy"></span>`:`<span class="thumb ph" aria-hidden="true">${CUP}</span>`;
+$("#coffeeList").innerHTML=cats.map((c,ci)=>`<h2 id="cat-${ci}">${esc(c)}</h2>`+COFFEE[c].map(i=>`<button class="dish${i.out?" out":""}" type="button" data-id="${i.id}">${thumb(i)}<span class="tx"><span class="r"><span class="nm">${esc(i.n)}${i.tag?`<span class="tagx">${esc(i.tag)}</span>`:""}</span><span class="dots"></span><span class="pr">${priceLabel(i)}</span></span>${i.d?`<span class="ds">${esc(i.d)}</span>`:""}</span></button>`).join("")).join("");
 if(!cats.length)$("#coffeeList").innerHTML='<p class="empty">Our coffee menu is coming soon.</p>';
 $("#coffeeTabs").addEventListener("click",e=>{const b=e.target.closest("[data-cat]");if(!b)return;
   $$("#coffeeTabs .cat").forEach(x=>x.setAttribute("aria-pressed",x===b));
