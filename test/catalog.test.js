@@ -6,7 +6,7 @@ const { buildMenu, loadMenu, settings } = require("../lib/catalog");
 const clone = () => JSON.parse(JSON.stringify(fx.objects));
 
 test("groups Square items into the website's coffee categories and flowers, in Square's order", () => {
-  const m = buildMenu(fx.objects, fx.counts, "L1");
+  const m = buildMenu(fx.objects, fx.counts, "L1", { ...settings, menuOrder: {} }); // Square order, before shop-settings menuOrder
   // Square names are matched ignoring case ("hot drinks", "Cold Drinks", "FRESH FLOWERS" in the fixture); the site shows shop-settings.json's spelling.
   assert.deepEqual(m.coffee.categories.map((c) => c.name), ["Hot drinks", "Cold drinks"]);
   assert.deepEqual(m.coffee.categories[1].items.map((i) => i.n), ["Matcha Latte", "Chai Latte", "Hot Chocolate", "Loose Leaf Tea"]);
@@ -120,4 +120,12 @@ test("the catalog is read with the Square version that sends modifier-set rules"
   const call = async (path, body, method, f, version) => { if (path.startsWith("/v2/catalog")) versions.push(version); return path.startsWith("/v2/catalog") ? { objects: fx.objects } : { counts: [] } };
   await loadMenu({ call, locationId: "L1" }).catch(() => {});
   assert.ok(versions.length && versions.every((v) => v === "2025-05-21"));
+});
+
+test("menuOrder in shop settings sets the drink order, matching names without sizes; unlisted drinks follow in Square's order", () => {
+  const opts = { ...settings, menuOrder: { "Hot drinks": ["Mocha", "cortado", "Latte (12oz)"] } };
+  const names = buildMenu(fx.objects, fx.counts, "L1", opts).coffee.categories[0].items.map((i) => i.n);
+  const square = buildMenu(fx.objects, fx.counts, "L1", { ...settings, menuOrder: {} }).coffee.categories[0].items.map((i) => i.n);
+  assert.deepEqual(names.slice(0, 3), ["Mocha", "Cortado", "Latte"]);
+  assert.deepEqual(names.slice(3), square.filter((n) => !["Mocha", "Cortado", "Latte"].includes(n)));
 });
