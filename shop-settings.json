@@ -12,6 +12,8 @@
     "minFee": 1000,
     "maxKm": 35
   },
+  "requiredChoices": ["Milk"],
+  "_requiredChoices": "Square modifier sets (by name) that customers must pick from on the website, so there's no None option. Square's own Require a selection switch also counts when Square sends it.",
   "occasions": ["Just because", "Birthday", "Anniversary", "Sympathy", "Thank you", "Get well", "New baby", "A holiday"],
   "preorderMinDays": 2,
   "preorderMaxDays": 60,
