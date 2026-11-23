@@ -121,3 +121,11 @@ test("the catalog is read with the Square version that sends modifier-set rules"
   await loadMenu({ call, locationId: "L1" }).catch(() => {});
   assert.ok(versions.length && versions.every((v) => v === "2025-05-21"));
 });
+
+test("menuOrder in shop settings sets the drink order, matching names without sizes; unlisted drinks follow in Square's order", () => {
+  const opts = { ...settings, menuOrder: { "Hot drinks": ["Mocha", "cortado", "Latte (12oz)"] } };
+  const names = buildMenu(fx.objects, fx.counts, "L1", opts).coffee.categories[0].items.map((i) => i.n);
+  const square = buildMenu(fx.objects, fx.counts, "L1", { ...settings, menuOrder: {} }).coffee.categories[0].items.map((i) => i.n);
+  assert.deepEqual(names.slice(0, 3), ["Mocha", "Cortado", "Latte"]);
+  assert.deepEqual(names.slice(3), square.filter((n) => !["Mocha", "Cortado", "Latte"].includes(n)));
+});

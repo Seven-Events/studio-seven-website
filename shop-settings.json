@@ -1,6 +1,10 @@
 {
   "_note": "Website-only settings. Items, prices, photos and stock live in Square (Square Dashboard > Items). This file says which Square categories appear on the website and in what order, plus a few things Square doesn't hold.",
   "coffeeCategories": ["Hot drinks", "Cold drinks"],
+  "menuOrder": {
+    "_how": "The order drinks show in on the website, per coffee category: strongest coffee to milkiest, tea last. Names match Square's ignoring capitals and any size in brackets. Drinks not listed show after these, in Square's order.",
+    "Hot drinks": ["Brewed Coffee", "Hot Coffee", "Americano", "Double Espresso", "Espresso Macchiato", "Cortado", "Flat White", "Cappuccino", "Latte", "Matcha Latte", "Tea Latte", "Hot Tea"]
+  },
   "flowerCategories": ["Fresh flowers"],
   "taxPercent": "13",
   "delivery": {
