@@ -6,7 +6,7 @@ const { buildMenu, loadMenu, settings } = require("../lib/catalog");
 const clone = () => JSON.parse(JSON.stringify(fx.objects));
 
 test("groups Square items into the website's coffee categories and flowers, in Square's order", () => {
-  const m = buildMenu(fx.objects, fx.counts, "L1");
+  const m = buildMenu(fx.objects, fx.counts, "L1", { ...settings, menuOrder: {} }); // Square order, before shop-settings menuOrder
   // Square names are matched ignoring case ("hot drinks", "Cold Drinks", "FRESH FLOWERS" in the fixture); the site shows shop-settings.json's spelling.
   assert.deepEqual(m.coffee.categories.map((c) => c.name), ["Hot drinks", "Cold drinks"]);
   assert.deepEqual(m.coffee.categories[1].items.map((i) => i.n), ["Matcha Latte", "Chai Latte", "Hot Chocolate", "Loose Leaf Tea"]);
