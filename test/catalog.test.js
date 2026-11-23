@@ -81,3 +81,22 @@ test("every Square photo on an item comes through, in order, for the product pag
   assert.equal(f.img, "/img/sprig.webp");
   assert.deepEqual(f.imgs, ["/img/sprig.webp", "https://example.com/two.jpg"]);
 });
+
+test("a modifier set marked 'Require a selection' in Square stays required when the item says -1 (use the set's rule)", () => {
+  const objs = JSON.parse(JSON.stringify(fx.objects));
+  const milkList = objs.find((o) => o.id === "ML_MILK").modifier_list_data;
+  milkList.min_selected_modifiers = 1; milkList.max_selected_modifiers = 1;
+  milkList.modifiers.forEach((m) => { m.modifier_data.on_by_default = m.id === "ML_MILK_1" });
+  for (const o of objs) for (const info of (o.item_data && o.item_data.modifier_list_info) || []) {
+    if (info.modifier_list_id !== "ML_MILK") continue;
+    info.min_selected_modifiers = -1; info.max_selected_modifiers = -1;
+    info.modifier_overrides = milkList.modifiers.map((m) => ({ modifier_id: m.id, on_by_default: false, on_by_default_override: "NOT_SET" }));
+  }
+  const latte = buildMenu(objs, fx.counts, "L1").coffee.categories[0].items.find((i) => i.n === "Latte");
+  const milk = latte.mods[0];
+  assert.equal(milk.req, true);
+  assert.deepEqual(milk.o.map((x) => x.def), [false, true, false, false, false].slice(0, milk.o.length));
+  // an item can still switch the default off for itself
+  objs.forEach((o) => ((o.item_data && o.item_data.modifier_list_info) || []).forEach((i) => (i.modifier_overrides || []).forEach((x) => { if (x.modifier_id === "ML_MILK_1") x.on_by_default_override = "NO" })));
+  assert.equal(buildMenu(objs, fx.counts, "L1").coffee.categories[0].items.find((i) => i.n === "Latte").mods[0].o[1].def, false);
+});
