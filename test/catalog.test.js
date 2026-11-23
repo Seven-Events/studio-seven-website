@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert");
 const fx = require("./fixtures/square-catalog.json");
-const { buildMenu, loadMenu } = require("../lib/catalog");
+const { buildMenu, loadMenu, settings } = require("../lib/catalog");
 
 const clone = () => JSON.parse(JSON.stringify(fx.objects));
 
@@ -99,4 +99,25 @@ test("a modifier set marked 'Require a selection' in Square stays required when 
   // an item can still switch the default off for itself
   objs.forEach((o) => ((o.item_data && o.item_data.modifier_list_info) || []).forEach((i) => (i.modifier_overrides || []).forEach((x) => { if (x.modifier_id === "ML_MILK_1") x.on_by_default_override = "NO" })));
   assert.equal(buildMenu(objs, fx.counts, "L1").coffee.categories[0].items.find((i) => i.n === "Latte").mods[0].o[1].def, false);
+});
+
+test("modifier sets named in requiredChoices are required even when Square sends no rule, and newer Square sets without selection_type still work", () => {
+  const objs = JSON.parse(JSON.stringify(fx.objects));
+  for (const o of objs) {
+    if (o.type === "MODIFIER_LIST") delete o.modifier_list_data.selection_type;
+    for (const info of (o.item_data && o.item_data.modifier_list_info) || []) { info.min_selected_modifiers = -1; info.max_selected_modifiers = -1 }
+  }
+  objs.find((o) => o.id === "ML_MILK").modifier_list_data.max_selected_modifiers = 1;
+  const opts = { ...settings, requiredChoices: ["milk"] };
+  const [milk, adds] = buildMenu(objs, fx.counts, "L1", opts).coffee.categories[0].items.find((i) => i.n === "Latte").mods;
+  assert.equal(milk.req, true); assert.equal(milk.multi, false);
+  assert.equal(adds.req, false); assert.equal(adds.multi, true);
+  assert.equal(buildMenu(objs, fx.counts, "L1", { ...settings, requiredChoices: [] }).coffee.categories[0].items.find((i) => i.n === "Latte").mods[0].req, false);
+});
+
+test("the catalog is read with the Square version that sends modifier-set rules", async () => {
+  const versions = [];
+  const call = async (path, body, method, f, version) => { if (path.startsWith("/v2/catalog")) versions.push(version); return path.startsWith("/v2/catalog") ? { objects: fx.objects } : { counts: [] } };
+  await loadMenu({ call, locationId: "L1" }).catch(() => {});
+  assert.ok(versions.length && versions.every((v) => v === "2025-05-21"));
 });
