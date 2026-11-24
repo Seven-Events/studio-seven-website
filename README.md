@@ -32,7 +32,8 @@ Customer's phone ──> Vercel (website in public/ + small functions in api/)
 | `lib/order.js` | Checks every order against the live Square menu. Orders use Square's own items, so Square sets the prices and nobody can change one in their browser. |
 | `lib/checkout.js` | Creates the Square order and charges the customer. |
 | `lib/signup.js` | Saves coffee cart requests to Square, and emails the shop. |
-| `lib/schedule.js` | Closed days, no-delivery days and the delivery rate from `/admin.html`, saved on the shop location in Square. |
+| `lib/schedule.js` | Closed days, opening hours, no-delivery days and the delivery rate from `/admin.html`, saved on the shop location in Square. |
+| `lib/hours.js` | Opening hours (from `/admin.html`, or else the shop location in Square), so coffee pickup times are only offered while you're open. |
 | `lib/delivery.js` | Works out the delivery cost from the driving distance to the customer's address. |
 | `test/` | Automated checks. Run `npm test`. |
 
@@ -128,7 +129,7 @@ Capital letters don't matter, so "hot drinks" in Square works too, but the spell
 
 ## Everyday changes
 
-- **Closed days, holidays and no-delivery days:** open `/admin.html` on the website (bookmark it on your phone). It asks for the staff password the first time on each device. Pick **Closed** (no orders at all) or **No deliveries** (pickup still open), choose the day or the first and last day of a stretch, add a note customers will see if you like (for example "Christmas"), press **Add**, then **Save**. Under **Weekly schedule**, tap the days the shop is open and, separately, the days you deliver. On a day the shop is closed but deliveries run, customers can order delivery but not pickup or coffee; on a day without deliveries, they can still pick up. Checkout greys those days out, and the server refuses them too. When the shop is closed today, coffee orders and "Soonest" pickup are switched off for the day. Days are saved on your shop location in Square, so there's nothing else to set up.
+- **Closed days, holidays and no-delivery days:** open `/admin.html` on the website (bookmark it on your phone). It asks for the staff password the first time on each device. Pick **Closed** (no orders at all) or **No deliveries** (pickup still open), choose the day or the first and last day of a stretch, add a note customers will see if you like (for example "Christmas"), press **Add**, then **Save**. Under **Weekly schedule**, tap the days the shop is open, set the opening and closing time for each open day (coffee pickup times are only offered between them), and, separately, tap the days you deliver. On a day the shop is closed but deliveries run, customers can order delivery but not pickup or coffee; on a day without deliveries, they can still pick up. Checkout greys those days out, and the server refuses them too. When the shop is closed today, coffee orders and "Soonest" pickup are switched off for the day. Days are saved on your shop location in Square, so there's nothing else to set up.
 - **Delivery rate, minimum and distance:** also on `/admin.html`, under **Delivery** (per km, the least a delivery costs, and the furthest km you'll go). Press **Save**.
 
 - **Change the menu, prices, photos or stock:** do it in Square, as above.
@@ -137,7 +138,7 @@ Capital letters don't matter, so "hot drinks" in Square works too, but the spell
 
 ## How orders work
 
-- Coffee is pickup only, either as soon as possible (ready in about 10 minutes) or at a chosen time up to about 3.5 hours ahead.
+- Coffee is pickup only, either as soon as possible (ready in about 10 minutes) or at a chosen time up to about 4 hours ahead. Times are only offered while the shop is open, using the **opening hours on `/admin.html`** (under **Weekly schedule**), with last coffee orders 15 minutes before closing (`lastCoffeeMins` in `shop-settings.json`). Before opening, customers can pick a time from opening onwards; after closing, checkout says when you're next open. Until hours are saved there, the business hours on your location in Square are used (and the admin page starts from those), then `hours` in `shop-settings.json`, and if that's empty too, times aren't limited by the clock. Closed days from `/admin.html` still apply.
 - Flowers can be picked up or delivered. Delivery costs $1.25 per km of one-way driving from the shop (41 King St E, Omemee), with a $10 minimum, up to 35 km; all three can be changed at `/admin.html`. As customers type their address, they get address suggestions (from Photon, a free OpenStreetMap service), and they see the distance and price as soon as they pick one, and the server works it out again at payment, so the browser can't change it. At checkout, customers choose "Soonest" or pick a day 2 to 60 days ahead. One order has one date, because each Square order holds one pickup or delivery.
 - Orders with Christmas items must be for one of the Christmas days (see "Everyday changes").
 - An order with coffee and flowers is a single pickup today. To have flowers delivered or pre-order them for another day, customers order the flowers separately.
