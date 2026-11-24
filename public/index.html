@@ -124,6 +124,13 @@ main{padding-bottom:calc(var(--navh) + 20px + env(safe-area-inset-bottom,0px));o
 .drink .dots{flex:1;border-bottom:1.5px dotted rgba(37,70,65,.3);transform:translateY(-5px);min-width:12px}
 .drink .pr{font-variant-numeric:tabular-nums;font-weight:500}
 
+/* coffee photo (home page coffee section) */
+.coffee-l{display:flex;flex-direction:column;gap:20px}
+.coffeepic{aspect-ratio:4/3;width:100%;border-radius:22px;background:var(--tileB);color:var(--forest);display:grid;place-items:center;position:relative;overflow:hidden}
+.coffeepic svg{width:42%;height:auto}
+.coffeepic img.photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.coffeepic span{position:absolute;left:14px;bottom:14px;background:var(--stamp);color:var(--stamp-ink);font-family:var(--display);font-style:italic;font-size:1.2rem;padding:4px 14px 6px;border-radius:999px;transform:rotate(-4deg)}
+
 /* cart */
 .cart2{display:grid;gap:20px}
 .cartpic{aspect-ratio:5/4;max-width:100%;border-radius:22px;background:var(--tileB);display:grid;place-items:center;position:relative;overflow:hidden}
@@ -285,9 +292,10 @@ input:focus,select:focus,textarea:focus{border-color:var(--forest);outline:none}
   .band .wrap>.btn.block{width:auto;align-self:flex-start;padding:0 34px}
 
   .brick .wrap{display:grid;grid-template-columns:1fr 1.15fr;column-gap:72px;align-items:start}
-  .brick .sh{grid-row:1 / span 2}
+  .brick .coffee-l{grid-row:1 / span 2;gap:32px}
   .brick .drinks{grid-column:2}
-  .brick .wrap>.btn{grid-column:2;justify-self:start}
+  .brick .wrap>.btn{grid-column:2;justify-self:start;align-self:start}
+  .brick .wrap{grid-template-rows:auto 1fr}
 
   .band .wrap.cart2{grid-template-columns:1fr 1fr;gap:64px;align-items:center}
   .cartpic{aspect-ratio:4/3}
@@ -354,7 +362,11 @@ input:focus,select:focus,textarea:focus{border-color:var(--forest);outline:none}
 
     <section class="band brick">
       <div class="wrap">
-        <div class="sh"><span class="kicker">The coffee bar</span><h2>Order ahead, skip the line</h2><p>Order from your phone and we'll have it on the bar under your name.</p></div>
+        <div class="coffee-l">
+          <div class="sh"><span class="kicker">The coffee bar</span><h2>Order ahead, skip the line</h2><p>Order from your phone and we'll have it on the bar under your name.</p></div>
+          <!-- coffee photo: placeholder cup until the shop's own photo goes in as <img class="photo" src="/img/coffee.webp" alt="..."> -->
+          <div class="coffeepic" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20h22v8a11 11 0 0 1-22 0z"/><path d="M33 22h2.5a4.5 4.5 0 0 1 0 9H32"/><path d="M8 41h28"/><path d="M18 9c-1.5 2 1.5 3.5 0 6M24 8c-1.5 2 1.5 3.5 0 6"/></svg><span>on the bar</span></div>
+        </div>
         <div class="drinks" id="featDrinks"></div>
         <a class="btn" href="#coffee" style="align-self:flex-start">See the full menu</a>
       </div>
