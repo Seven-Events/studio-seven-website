@@ -113,6 +113,8 @@ $("#flowerTiles").innerHTML=FLOWERS.map(tile).join("");
 const priceLabel=i=>i.out?"Sold out":fromP(i);
 const feat=allDrinks().filter(d=>d.tag&&!d.out);
 $("#featDrinks").innerHTML=feat.concat(allDrinks().filter(d=>!d.tag&&!d.out)).slice(0,4).map(d=>`<button class="drink" type="button" data-id="${d.id}"><span class="nm">${esc(d.n)}</span><span class="dots"></span><span class="pr">${money(minP(d))}</span></button>`).join("");
+/* home page coffee picture: the Latte's photo from Square (drawn cup until it has one) */
+{const l=allDrinks().find(d=>/^latte$/i.test(d.n.trim())&&d.img);if(l){const c=$(".coffeepic");c.insertAdjacentHTML("afterbegin",`<img class="photo" src="${esc(l.img)}" style="object-position:${esc(l.focus||"50% 50%")}" alt="A latte from the Studio Seven coffee bar" loading="lazy">`);c.removeAttribute("aria-hidden");c.querySelector("svg").remove()}}
 const cats=Object.keys(COFFEE);
 $("#coffeeTabs").innerHTML=cats.map((c,i)=>`<button class="cat" type="button" aria-pressed="${i===0}" data-cat="${i}">${esc(c)}</button>`).join("");
 /* a small square photo beside each drink: the item's first photo in Square, or a drawn cup until one is added */
