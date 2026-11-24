@@ -51,3 +51,26 @@ test("loads hours from the Square location, and copes when Square has none or fa
   try { assert.equal(await loadHours({ locationId: "L1", call: async () => { throw new Error("down"); } }), null); }
   finally { console.error = err; }
 });
+
+test("opening hours saved at /admin.html are tidied, and win over Square's", async () => {
+  const { normalize } = require("../lib/schedule");
+  const { hoursFromSchedule } = require("../lib/hours");
+  const saved = normalize({ h: [null, [420, 900], [420, 900], [420, 900], [420, 900], [420, 1020], [900, 480]] });
+  assert.deepEqual(saved.h, [null, [420, 900], [420, 900], [420, 900], [420, 900], [420, 1020], null]); // Saturday closes before it opens: dropped
+  assert.equal(normalize({ h: [null, null, null, null, null, null, null] }).h, undefined);
+  assert.equal(normalize({ h: [[420, 900]] }).h, undefined); // not a whole week
+  const h = hoursFromSchedule(saved);
+  assert.deepEqual(h[5], [[420, 1020]]);
+  assert.deepEqual(h[0], []);
+  assert.equal(hoursFromSchedule({ c: [] }), null);
+
+  const { loadMenu } = require("../lib/catalog");
+  const call = async (path) => {
+    if (path.startsWith("/v2/catalog/list")) return { objects: fx.objects };
+    if (path.includes("/custom-attributes/")) return { custom_attribute: { value: JSON.stringify({ h: saved.h }) } };
+    if (path === "/v2/locations/L1") return { location: { business_hours: { periods } } };
+    return { counts: fx.counts };
+  };
+  const m = await loadMenu({ call, locationId: "L1" });
+  assert.deepEqual(m.hours[5], [[420, 1020]]); // Friday till 5 from the admin page, not Square's 3
+});

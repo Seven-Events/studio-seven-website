@@ -40,6 +40,11 @@ button:disabled{opacity:.5;cursor:default}
 .week button{padding:0;min-height:48px;text-transform:none;letter-spacing:0;font-size:.9rem}
 .week button[aria-pressed="true"]{background:var(--door);color:#f6f1df}
 .week button[aria-pressed="false"]{color:var(--muted);border-color:var(--rule);text-decoration:line-through}
+.hrs{display:grid;grid-template-columns:3.2em minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:6px 8px;margin-bottom:6px}
+.hrs b{font-weight:600;font-size:.9rem;color:var(--forest)}
+.hrs input{min-height:44px;padding:6px 8px}
+.hrs .to{color:var(--muted);font-size:.85rem}
+.hrs .shut{grid-column:2/-1;color:var(--muted);font-size:.9rem;font-style:italic}
 .list{list-style:none;margin:0;padding:0}
 .list li{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--rule)}
 .list li:first-child{border-top:0}
@@ -74,7 +79,7 @@ button:disabled{opacity:.5;cursor:default}
 <header><div class="w"><a href="/"><img src="/img/logo.webp" alt="Studio Seven"></a><a href="/">Back to the shop</a></div></header>
 <main class="w">
   <h1>Shop days</h1>
-  <p class="lead">Set the days the shop is closed and the days there are no deliveries. Checkout won't let customers pick those days. Changes show on the website within about a minute.</p>
+  <p class="lead">Set the days the shop is closed, your opening hours, and the days there are no deliveries. Checkout won't let customers pick those days. Changes show on the website within about a minute.</p>
 
   <form class="card pw" id="pwForm" hidden>
     <label for="pw">Staff password</label>
@@ -109,6 +114,9 @@ button:disabled{opacity:.5;cursor:default}
       <p class="hint">Tap a day to switch it on or off. The shop and deliveries can run on different days: on a day the shop is closed, customers can still order delivery, and on a day without deliveries, they can still pick up.</p>
       <span class="legend">Shop open</span>
       <div class="week" id="cw"></div>
+      <span class="legend">Opening hours</span>
+      <p class="hint" style="margin-bottom:8px">Coffee pickup times are only offered between these times, with last orders 15 minutes before closing.</p>
+      <div id="hours" style="margin-bottom:16px"></div>
       <span class="legend">Deliveries</span>
       <div class="week" id="dw"></div>
     </section>
@@ -145,6 +153,10 @@ button:disabled{opacity:.5;cursor:default}
   const today=iso(new Date());
   const pretty=(d,y)=>new Date(d+"T12:00").toLocaleDateString("en-CA",{weekday:"short",month:"short",day:"numeric",...(y?{year:"numeric"}:{})});
   let S=null, DEF={perKm:125,maxKm:35,minFee:1000}, dirty=false, kind="c";
+  // Opening times being edited, as ["07:00","15:00"] per weekday (Sunday first). Saved as minutes in S.h.
+  let H=[["",""],["",""],["",""],["",""],["",""],["",""],["",""]];
+  const hhmm=m=>String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0");
+  const mins=t=>{const m=/^(\d{2}):(\d{2})/.exec(t||"");return m?+m[1]*60+ +m[2]:null};
 
   function status(msg,cls){const s=$("#status");s.textContent=msg;s.className="status"+(cls?" "+cls:"")}
   function changed(){dirty=true;status("Not saved yet");render()}
@@ -160,6 +172,9 @@ button:disabled{opacity:.5;cursor:default}
   async function open(){
     try{const out=await api({});setPw(getPw()||$("#pw").value.trim());S=out.schedule;DEF=out.defaults||DEF;
       $("#pwForm").hidden=true;$("#app").hidden=false;$("#bar").hidden=false;
+      // Saved opening times, or else the business hours from Square to start from.
+      const src=S.h?S.h.map(p=>p&&[p]):DEF.hours?WD.map((n,i)=>DEF.hours[i]||[]):null;
+      H=WD.map((n,i)=>{const p=src&&src[i];return p&&p.length?[hhmm(p[0][0]),hhmm(p[p.length-1][1])]:["",""]});
       $("#rate").value=((S.r??DEF.perKm)/100).toFixed(2);$("#max").value=S.mx??DEF.maxKm;$("#min").value=((S.mn??DEF.minFee??0)/100).toFixed(2);
       status("Everything's saved","ok");render()}
     catch(e){if(!$("#pwForm").hidden||!getPw()){$("#pwMsg").textContent=e.message;$("#pwMsg").style.color="var(--brick)"}showLogin()}
@@ -174,6 +189,8 @@ button:disabled{opacity:.5;cursor:default}
       return `<li><div class="what"><span class="pill ${k}">${k==="c"?"Closed":"No deliveries"}</span><b>${esc(pretty(r[0],y))}${one?"":" to "+esc(pretty(r[1],y))}</b>${r[2]?`<small>${esc(r[2])}</small>`:""}</div><button type="button" data-rm="${k}|${r[0]}|${r[1]}">Remove</button></li>`}).join("")
       :`<li><p class="empty">No days off coming up.</p></li>`;
     for(const k of ["cw","dw"])$("#"+k).innerHTML=WD.map((n,i)=>`<button type="button" data-w="${k}" data-i="${i}" aria-pressed="${!S[k].includes(i)}">${n}</button>`).join("");
+    $("#hours").innerHTML=WD.map((n,i)=>`<div class="hrs"><b>${n}</b>${S.cw.includes(i)?`<span class="shut">Closed</span>`:
+      `<input type="time" step="900" data-h="${i}|0" value="${H[i][0]}" aria-label="${n} opens"><span class="to">to</span><input type="time" step="900" data-h="${i}|1" value="${H[i][1]}" aria-label="${n} closes">`}</div>`).join("");
     const start=new Date();start.setDate(start.getDate()-start.getDay());let cal=WD.map(n=>`<div class="h">${n[0]}</div>`).join("");
     for(let i=0;i<28;i++){const d=new Date(start);d.setDate(start.getDate()+i);const s=iso(d),k=s<today?"":info(s);
       cal+=`<div class="${k}"${s<today?' style="opacity:.4"':""}><b>${d.getDate()}</b>${k==="c"?"Closed":k==="d"?"Pickup":k==="s"?"Deliver":""}</div>`}
@@ -198,6 +215,7 @@ button:disabled{opacity:.5;cursor:default}
     $("#from").value="";$("#to").value="";$("#note").value="";changed();
   });
   $("#from").addEventListener("change",()=>{if(!$("#to").value||$("#to").value<$("#from").value)$("#to").min=$("#from").value});
+  $("#hours").addEventListener("input",e=>{const t=e.target.closest("[data-h]");if(!t)return;const [i,j]=t.dataset.h.split("|");H[i][j]=t.value;dirty=true;status("Not saved yet")});
   $("#rate").addEventListener("input",changed);$("#max").addEventListener("input",changed);$("#min").addEventListener("input",changed);
 
   $("#save").addEventListener("click",async()=>{
@@ -205,8 +223,17 @@ button:disabled{opacity:.5;cursor:default}
     if(!(mn>=0&&mn<=200)){status("Minimum should be between $0 and $200.","err");$("#min").focus();return}
     if(!(rate>=0&&rate<=20)){status("Per km should be between $0 and $20.","err");$("#rate").focus();return}
     if(!(max>=1&&max<=200)){status("Up to should be between 1 and 200 km.","err");$("#max").focus();return}
+    // Opening times: every open day needs both times, or leave them all empty for no time limit.
+    const open=WD.map((n,i)=>i).filter(i=>!S.cw.includes(i)),set=open.filter(i=>H[i][0]||H[i][1]);
+    let h;
+    if(set.length){
+      for(const i of open){const a=mins(H[i][0]),b=mins(H[i][1]);
+        if(a==null||b==null){status(`Add the opening and closing time for ${WD[i]}.`,"err");return}
+        if(b<=a){status(`${WD[i]} closes before it opens. Check the times.`,"err");return}}
+      h=WD.map((n,i)=>open.includes(i)?[mins(H[i][0]),mins(H[i][1])]:null);
+    }
     $("#save").disabled=true;status("Saving…");
-    try{const out=await api({schedule:{...S,r:Math.round(rate*100),mx:max,mn:Math.round(mn*100)}});S=out.schedule;dirty=false;status("Saved. Live within a minute.","ok");render()}
+    try{const out=await api({schedule:{...S,h,r:Math.round(rate*100),mx:max,mn:Math.round(mn*100)}});S=out.schedule;dirty=false;status("Saved. Live within a minute.","ok");render()}
     catch(e){status(e.message,"err")}
     $("#save").disabled=false;
   });
