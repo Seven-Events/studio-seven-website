@@ -202,7 +202,20 @@ function loadSquare(env){return new Promise((res,rej)=>{if(window.Square)return 
   s.src=env==="production"?"https://web.squarecdn.com/v1/square.js":"https://sandbox.web.squarecdn.com/v1/square.js";s.onload=res;s.onerror=()=>rej(new Error("load"));document.head.appendChild(s)})}
 function destroyPayments(){payMethods.forEach(m=>{try{m.destroy()}catch(e){}});payMethods=[]}
 
-function times(){const out=[],t=new Date();t.setMinutes(Math.ceil((t.getMinutes()+15)/5)*5,0,0);for(let i=0;i<14;i++){out.push({iso:t.toISOString(),label:t.toLocaleTimeString("en-CA",{hour:"numeric",minute:"2-digit"})});t.setMinutes(t.getMinutes()+15)}return out}
+/* Opening hours (the shop location's business hours in Square). Coffee times are only offered while the shop is open,
+   up to lastCoffeeMins before closing. No hours in Square = times aren't limited by the clock. The server checks this too. */
+const HRS=M.hours||null,LAST=M.lastCoffeeMins==null?15:M.lastCoffeeMins;
+function shopClock(t){const p=Object.fromEntries(new Intl.DateTimeFormat("en-US",{timeZone:"America/Toronto",weekday:"short",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(t).map(x=>[x.type,x.value]));
+  return{wd:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(p.weekday),mins:+p.hour*60+ +p.minute}}
+const openAt=t=>{if(!HRS)return true;const c=shopClock(t);return(HRS[c.wd]||[]).some(([a,b])=>c.mins>=a&&c.mins<=b-LAST)};
+const clock=t=>t.toLocaleTimeString("en-CA",{hour:"numeric",minute:"2-digit"});
+function times(){const out=[],t=new Date(),end=Date.now()+235*60000;t.setMinutes(Math.ceil((t.getMinutes()+15)/15)*15,0,0);
+  for(;t<=end;t.setMinutes(t.getMinutes()+15))if(openAt(t)&&!dayInfo(t.toLocaleDateString("en-CA")).nop)out.push({iso:t.toISOString(),label:clock(t)});return out}
+/* When coffee orders open again, in words ("at 7:00 a.m." / "tomorrow at 7:00 a.m." / "Thursday at ..."), or "" if not within a week. */
+function nextOpen(){const t=new Date();t.setMinutes(Math.ceil(t.getMinutes()/15)*15,0,0);
+  for(let i=0;i<7*96;i++,t.setMinutes(t.getMinutes()+15)){const d=t.toLocaleDateString("en-CA");if(!openAt(t)||dayInfo(d).nop)continue;
+    return d===day(0)?`at ${clock(t)}`:d===day(1)?`tomorrow at ${clock(t)}`:`${t.toLocaleDateString("en-CA",{weekday:"long"})} at ${clock(t)}`}
+  return""}
 /* Delivery is priced per km of driving from the shop (api/delivery.js). DQ is the quote for the address typed in. */
 let DQ=null;
 const DL=M.delivery||{perKm:0,maxKm:0};
@@ -213,6 +226,8 @@ function openCart(){
   const hasC=cart.some(l=>item(l.id).kind==="coffee"),hasF=cart.some(l=>item(l.id).kind==="flowers");
   const hasX=cart.some(l=>isXmas(item(l.id))),xd=xmasOpen();
   const draft=store.get("me",{});
+  // Coffee pickup times: only while the shop is open (opening hours from Square, and closed days from /admin.html).
+  const slots=hasC?times():[],asapOk=hasC&&openAt(new Date())&&!dayInfo(day(0)).nop,coffeeOk=asapOk||slots.length>0;
   // Flowers on their own can be for a later day: one of the Christmas days if the order has Christmas items, otherwise soonest or any day in the pre-order window.
   const whenHtml=!hasF||hasC?"":hasX
     ?`<div class="field"><label for="cDay">Christmas pickup or delivery day</label><select id="cDay">${dayOptions(xd,false)}</select><small>We'll have your flowers ready that day and text you the day before.</small></div>`
@@ -222,7 +237,8 @@ function openCart(){
     (hasF&&!hasC?choice("Flowers",[{n:"I'll pick up",d:0},{n:"Deliver them",d:0,s:`${money(DL.perKm)}/km${DL.minFee?`, ${short(DL.minFee)} min`:""}`}])+`<div class="field addr" id="addrF" hidden><label for="cAddr">Delivery address</label><input type="text" id="cAddr" autocomplete="street-address" role="combobox" aria-autocomplete="list" aria-controls="addrList" aria-expanded="false" placeholder="Start typing your street address" value="${esc(draft.addr||"")}"><ul class="sugg" id="addrList" role="listbox" hidden></ul><small id="addrQ" aria-live="polite">${money(DL.perKm)} per km of driving from the shop${DL.minFee?` (${short(DL.minFee)} minimum)`:""}, up to ${DL.maxKm} km.</small></div>`+whenHtml:"")+
     (hasF&&hasC?(hasX?`<p class="fine">Christmas flowers are for a later day, so they need their own order. Please remove the coffee or the Christmas flowers and order them separately.</p>`:`<p class="fine">Flowers in an order with coffee are picked up with it today. To pre-order flowers for another day, or have them delivered, order them on their own.</p>`):"")+
     (hasC&&dayInfo(day(0)).nop?`<p class="fine">Sorry, ${dayInfo(day(0)).closed?"we're":"the shop is"} closed today${dayInfo(day(0)).note?" ("+esc(dayInfo(day(0)).note)+")":""}, so we can't take coffee orders. See you when we're open!</p>`:"")+
-    (hasC?`<div class="field"><label for="cTime">Coffee ready at</label><select id="cTime"><option value="asap">As soon as you can (about 10 min)</option>${times().map(t=>`<option value="${t.iso}">${t.label}</option>`).join("")}</select></div>`:"")+
+    (hasC&&!dayInfo(day(0)).nop&&!coffeeOk?`<p class="fine">Sorry, we're closed right now, so we can't take coffee orders.${nextOpen()?` We're open again ${esc(nextOpen())}`.replace(/\.?$/,"."):""}</p>`:"")+
+    (hasC&&coffeeOk?`<div class="field"><label for="cTime">Coffee ready at</label><select id="cTime">${asapOk?`<option value="asap">As soon as you can (about 10 min)</option>`:""}${slots.map(t=>`<option value="${t.iso}">${t.label}</option>`).join("")}</select>${asapOk?"":`<small>We're not open yet, so pick a time once we are.</small>`}</div>`:"")+
     `<div class="row2"><div class="field"><label for="cName">Name</label><input type="text" id="cName" autocomplete="name" value="${esc(draft.name||"")}"></div><div class="field"><label for="cPhone">Mobile</label><input type="tel" id="cPhone" autocomplete="tel" inputmode="tel" value="${esc(draft.phone||"")}"></div></div>
     <span class="err" id="cErr" hidden></span>
     <div class="totals" id="totals"></div>
@@ -291,6 +307,7 @@ function openCart(){
     if(hasX&&hasC){err("Christmas flowers need their own order. Please remove the coffee or the Christmas flowers.");return null}
     if(hasX&&!xd.length){err("Christmas orders are closed. Please remove the Christmas flowers, or call the shop.");return null}
     if(hasC&&dayInfo(day(0)).nop){err("Sorry, the shop is closed today, so we can't take coffee orders.");return null}
+    if(hasC&&(!coffeeOk||!$("#cTime").value)){err("Sorry, we're closed right now, so we can't take coffee orders.");return null}
     const date=fDate();
     if(hasF&&!hasC&&!hasX&&!date&&val(root,"When")===1){err("Please choose a day for your flowers.");$("#cDate").focus();return null}
     if(date&&dayBlocked(date,deliver())){err(`Sorry, ${whyBlocked(date,deliver(),"that day")}. Please pick another day${dayInfo(date).closed?"":deliver()?", or choose pickup":", or choose delivery"}.`);return null}

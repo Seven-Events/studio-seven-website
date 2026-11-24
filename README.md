@@ -33,6 +33,7 @@ Customer's phone ──> Vercel (website in public/ + small functions in api/)
 | `lib/checkout.js` | Creates the Square order and charges the customer. |
 | `lib/signup.js` | Saves coffee cart requests to Square, and emails the shop. |
 | `lib/schedule.js` | Closed days, no-delivery days and the delivery rate from `/admin.html`, saved on the shop location in Square. |
+| `lib/hours.js` | Opening hours from the shop location in Square, so coffee pickup times are only offered while you're open. |
 | `lib/delivery.js` | Works out the delivery cost from the driving distance to the customer's address. |
 | `test/` | Automated checks. Run `npm test`. |
 
@@ -137,7 +138,7 @@ Capital letters don't matter, so "hot drinks" in Square works too, but the spell
 
 ## How orders work
 
-- Coffee is pickup only, either as soon as possible (ready in about 10 minutes) or at a chosen time up to about 3.5 hours ahead.
+- Coffee is pickup only, either as soon as possible (ready in about 10 minutes) or at a chosen time up to about 4 hours ahead. Times are only offered while the shop is open, using the **business hours on your location in Square** (Square Dashboard > Account & Settings > Business information > Locations), with last coffee orders 15 minutes before closing (`lastCoffeeMins` in `shop-settings.json`). Before opening, customers can pick a time from opening onwards; after closing, checkout says when you're next open. Change your hours in Square and the website follows within about a minute. If Square has no hours set, `hours` in `shop-settings.json` is used, and if that's empty too, times aren't limited by the clock. Closed days from `/admin.html` still apply.
 - Flowers can be picked up or delivered. Delivery costs $1.25 per km of one-way driving from the shop (41 King St E, Omemee), with a $10 minimum, up to 35 km; all three can be changed at `/admin.html`. As customers type their address, they get address suggestions (from Photon, a free OpenStreetMap service), and they see the distance and price as soon as they pick one, and the server works it out again at payment, so the browser can't change it. At checkout, customers choose "Soonest" or pick a day 2 to 60 days ahead. One order has one date, because each Square order holds one pickup or delivery.
 - Orders with Christmas items must be for one of the Christmas days (see "Everyday changes").
 - An order with coffee and flowers is a single pickup today. To have flowers delivered or pre-order them for another day, customers order the flowers separately.

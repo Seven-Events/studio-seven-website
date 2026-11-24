@@ -19,6 +19,10 @@
   "requiredChoices": ["Milk"],
   "_requiredChoices": "Square modifier sets (by name) that customers must pick from on the website, so there's no None option. Square's own Require a selection switch also counts when Square sends it.",
   "occasions": ["Just because", "Birthday", "Anniversary", "Sympathy", "Thank you", "Get well", "New baby", "A holiday"],
+  "hours": [],
+  "_hours": "Opening hours come from Square (Square Dashboard > Account & Settings > Business information > Locations > Business hours), and coffee pickup times are only offered while the shop is open. Only if Square has no hours set, these are used instead, in Square's shape, e.g. {\"day_of_week\": \"MON\", \"start_local_time\": \"07:00\", \"end_local_time\": \"15:00\"}. Closed days from /admin.html still apply on top.",
+  "lastCoffeeMins": 15,
+  "_lastCoffeeMins": "Last coffee orders (as soon as possible or a chosen time) this many minutes before closing.",
   "preorderMinDays": 2,
   "preorderMaxDays": 60,
   "christmas": {
