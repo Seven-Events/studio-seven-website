@@ -122,8 +122,6 @@ button,.btn,.bag,.cat,.opt span,.choice button,.nav a,.topnav a{font-family:var(
 .band.brick .btn{background:var(--trim);border-color:var(--trim);color:var(--forest);box-shadow:inset 0 0 0 4px var(--trim),inset 0 0 0 5px rgba(37,70,65,.4)}
 
 /* coffee cart picture */
-.cartpic{border-radius:2px;background:var(--trim)!important;box-shadow:inset 0 0 0 12px var(--trim),inset 0 0 0 13px rgba(92,74,38,.25),inset 0 0 0 26px #f2ead5,inset 0 0 0 27px rgba(92,74,38,.15),0 10px 20px -12px rgba(92,74,38,.5)}
-.cartpic span{border-radius:3px;background:var(--forest);color:var(--trim);left:30px;bottom:30px}
 
 /* notes / footer */
 @media (min-width:900px){.notes div{border-top:0;box-shadow:0 -1px 0 var(--forest),0 -4px 0 var(--plaster),0 -5px 0 var(--forest)}}

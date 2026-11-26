@@ -19,7 +19,7 @@
 .top{box-shadow:0 1px 0 rgba(92,74,38,.28),0 4px 0 var(--trim),0 5px 0 var(--door),0 8px 0 var(--door),0 10px 12px -6px rgba(60,58,10,.35)}
 .band.brick{background-color:var(--door)}
 .band.brick .btn{color:var(--door-deep)}
-.shopall,.cartpic span{background:var(--door)}
+.shopall{background:var(--door)}
 .tile .flag{background:var(--door)}
 .ribbon{background:var(--door)}
 .orn{color:var(--door)}
@@ -29,7 +29,7 @@
 .btn.out,.hero .btn.out{box-shadow:none;border-width:1.5px}
 .bag{box-shadow:none}
 .band.brick .btn{box-shadow:none}
-.shopall,.cartpic span{box-shadow:0 6px 14px rgba(37,70,65,.18)}
+.shopall{box-shadow:0 6px 14px rgba(37,70,65,.18)}
 .topnav a[aria-current="page"]::after{height:0;border-bottom:0;border-top:2px solid currentColor}
 .nav a[aria-current="page"]{box-shadow:inset 0 -2px 0 currentColor}
 /* trim: one solid painted moulding instead of stacked lines */
@@ -43,8 +43,6 @@
 .tile .pic::after{display:none}
 .tile .flag{left:10px;top:10px}
 .aside{box-shadow:inset 0 0 0 1px rgba(92,74,38,.25)}
-.cartpic{box-shadow:inset 0 0 0 1px rgba(92,74,38,.25),0 10px 20px -12px rgba(92,74,38,.5)}
-.cartpic span{left:14px;bottom:14px}
 @media (min-width:900px){.notes div{box-shadow:none;border-top:1.5px solid var(--forest)}}
 
 /* =========== Type: Work Sans throughout, no serifs =========== */
@@ -62,7 +60,7 @@ h1,h2,h3{font-weight:600;letter-spacing:-.03em;line-height:1.02}
 .menu h2{font-size:1.7rem}
 .aside b{font-size:1.2rem}
 .cl span{font-size:.98rem;font-weight:600;letter-spacing:-.01em}
-.shopall,.cartpic span{font-style:normal;font-weight:600;font-size:1rem}
+.shopall{font-style:normal;font-weight:600;font-size:1rem}
 .notes dt,.foot span,.ribbon span,.tile .flag,.tagx{font-weight:600;text-transform:uppercase;letter-spacing:.12em;font-size:.72rem}
 .ribbon span{font-size:.78rem}
 .foot span{font-size:.76rem}
@@ -76,7 +74,7 @@ h1,h2,h3{font-weight:600;letter-spacing:-.03em;line-height:1.02}
 }
 
 
-.tile b,.drink .nm,.dish .nm,.line b,.cl span,.shopall,.cartpic span,.sheet-h h2{font-family:"Work Sans",system-ui,sans-serif}
+.tile b,.drink .nm,.dish .nm,.line b,.cl span,.shopall,.sheet-h h2{font-family:"Work Sans",system-ui,sans-serif}
 
 /* =========== Headings: Work Sans light =========== */
 :root{--display:"Work Sans",system-ui,sans-serif}
