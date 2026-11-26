@@ -73,7 +73,7 @@ main{padding-bottom:calc(var(--navh) + 20px + env(safe-area-inset-bottom,0px));o
 .hero p{font-size:1.05rem;max-width:32ch;color:var(--hero-sub)}
 .headline{position:relative;padding-bottom:26px}
 .shopall{position:absolute;right:0;bottom:-4px;transform:rotate(-7deg);background:var(--stamp);color:var(--stamp-ink);font-family:var(--display);font-style:italic;font-size:1.3rem;padding:6px 20px 8px;border-radius:10px;text-decoration:none;box-shadow:0 6px 14px rgba(37,70,65,.15)}
-.collage{display:grid;grid-template-columns:1.1fr 1fr;grid-template-rows:150px 150px 120px;gap:10px;margin-top:8px}
+.collage{display:grid;grid-template-columns:1.1fr 1fr;grid-template-rows:150px 150px 72px;gap:10px;margin-top:8px}
 .cl{border-radius:20px;position:relative;overflow:hidden;text-decoration:none;display:flex;align-items:flex-end;padding:12px 14px;min-width:0}
 .cl img{position:absolute;right:6px;top:8px;height:80%;width:auto;opacity:.95}
 .cl span{position:relative;font-family:var(--display);font-size:1.3rem;line-height:1;color:var(--forest);background:rgba(251,248,240,.82);padding:5px 10px 6px;border-radius:999px}
@@ -82,8 +82,8 @@ main{padding-bottom:calc(var(--navh) + 20px + env(safe-area-inset-bottom,0px));o
 .c2{background:var(--colB)}
 .c3{background:var(--colC)}
 .c3 img{transform:scaleX(-1)}
-.c4{grid-column:1 / span 2;background:var(--page);border:1.5px solid rgba(37,70,65,.14)}
-.c4 img{height:120%;top:-10%}
+.c4{grid-column:1 / span 2;align-items:center;background:var(--page);border:1.5px solid rgba(37,70,65,.14)}
+.cl img.photo{inset:0;width:100%;height:100%;object-fit:cover;opacity:1}
 
 /* ribbon */
 .ribbon{background:var(--ribbon);border-block:1px solid var(--ribbon-line);transform:rotate(-2.5deg);margin:22px -20px;overflow:hidden;white-space:nowrap}
@@ -133,9 +133,6 @@ main{padding-bottom:calc(var(--navh) + 20px + env(safe-area-inset-bottom,0px));o
 
 /* cart */
 .cart2{display:grid;gap:20px}
-.cartpic{aspect-ratio:5/4;max-width:100%;border-radius:22px;background:var(--tileB);display:grid;place-items:center;position:relative;overflow:hidden}
-.cartpic img{height:78%;width:auto}
-.cartpic span{position:absolute;left:14px;bottom:14px;background:var(--stamp);color:var(--stamp-ink);font-family:var(--display);font-style:italic;font-size:1.2rem;padding:4px 14px 6px;border-radius:999px;transform:rotate(-4deg)}
 
 
 /* notes / footer */
@@ -261,7 +258,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--forest);outline:none}
 .topnav{display:none}
 .hero-text{display:flex;flex-direction:column;gap:18px}
 .band .wrap.cart2{display:grid}
-.cartpic{width:100%}
 @media (min-width:900px){
   :root{--navh:0px}
   .wrap{max-width:1180px;padding-left:max(40px,env(safe-area-inset-left,0px));padding-right:max(40px,env(safe-area-inset-right,0px))}
@@ -280,7 +276,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--forest);outline:none}
   .hero-text{display:flex;flex-direction:column;gap:22px}
   .hero h1{font-size:clamp(5rem,7.4vw,7.2rem)}
   .hero p{font-size:1.15rem}
-  .collage{grid-template-rows:200px 200px 150px;margin-top:0}
+  .collage{grid-template-rows:200px 200px 88px;margin-top:0}
   .cl span{font-size:1.5rem}
   .ribbon{margin:30px -20px}
 
@@ -297,8 +293,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--forest);outline:none}
   .brick .wrap>.btn{grid-column:2;justify-self:start;align-self:start}
   .brick .wrap{grid-template-rows:auto 1fr}
 
-  .band .wrap.cart2{grid-template-columns:1fr 1fr;gap:64px;align-items:center}
-  .cartpic{aspect-ratio:4/3}
+  .band .wrap.cart2>div{max-width:680px}
 
   .blushb .wrap{flex-direction:row;align-items:flex-end;justify-content:space-between}
   .notes{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
@@ -316,7 +311,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--forest);outline:none}
   .toast{bottom:28px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}.ribbon .track{animation:none}}
-@media (min-width:640px){.tiles{grid-template-columns:repeat(3,1fr)}.cart2{grid-template-columns:1fr 1fr;align-items:center}}
+@media (min-width:640px){.tiles{grid-template-columns:repeat(3,1fr)}}
 </style>
 <link rel="stylesheet" href="/historic.css">
 <link rel="stylesheet" href="/theme.css">
@@ -343,9 +338,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--forest);outline:none}
         </div>
         <div class="collage">
           <a class="cl c1" href="#flowers"><img src="/img/sprigf.webp" alt=""><span>Market bunches</span></a>
-          <a class="cl c2" href="#coffee"><img src="/img/sprig.webp" alt=""><span>Coffee bar</span></a>
+          <a class="cl c2" href="#coffee"><img class="photo" src="/img/coffee-beans.webp" width="800" height="397" alt="Roasted coffee beans"><span>Coffee bar</span></a>
           <a class="cl c3" href="#flowers"><img src="/img/sprigf.webp" alt=""><span>Pre-orders</span></a>
-          <a class="cl c4" href="#cart-booking"><img src="/img/sprig.webp" alt=""><span>Book the coffee cart</span></a>
+          <a class="cl c4" href="#cart-booking"><span>Book the coffee cart</span></a>
         </div>
       </div>
     </section>
@@ -374,7 +369,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--forest);outline:none}
 
     <section class="band" id="cart-booking">
       <div class="wrap cart2">
-        <div class="cartpic"><img src="/img/sprigf.webp" alt=""><span>on wheels</span></div>
         <div style="display:flex;flex-direction:column;gap:14px">
           <span class="kicker">Studio Seven, on wheels</span>
           <h2 style="font-size:2.8rem">Bring the coffee cart to your day</h2>
