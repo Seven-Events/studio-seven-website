@@ -5,6 +5,17 @@ const short=c=>c%100?money(c):"$"+(c/100);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const store={get(k,d){try{const v=localStorage.getItem("s7-"+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem("s7-"+k,JSON.stringify(v))}catch(e){}}};
 const SPRIG="/img/sprig.webp", SPRIGF="/img/sprigf.webp";
+/* Square photos are the shop's full-size uploads (often 2000px, PNGs up to 2.5 MB). Ask Vercel's image
+   resizer (set up under "images" in vercel.json) for a small WebP sized to where the photo is shown.
+   ws: widths offered, which must be listed in vercel.json; sz: the img "sizes" hint. If the resizer ever
+   fails, the error listener below falls back to the original photo. */
+const SQ_IMG=/^https:\/\/items-images-production\.s3\.us-west-2\.amazonaws\.com\//;
+const rs=(u,w)=>`/_vercel/image?url=${encodeURIComponent(u)}&w=${w}&q=75`;
+const imgAt=(u,ws,sz)=>SQ_IMG.test(u)&&!/^(localhost|127\.)/.test(location.hostname)
+  ?`src="${esc(rs(u,ws[ws.length-1]))}" srcset="${ws.map(w=>esc(rs(u,w))+" "+w+"w").join(", ")}" sizes="${sz}" data-orig="${esc(u)}" decoding="async"`
+  :`src="${esc(u)}" decoding="async"`;
+const THUMB=[128,256], TILE=[256,384,640], WIDE=[384,640,828,1080];
+document.addEventListener("error",e=>{const t=e.target;if(t.tagName==="IMG"&&t.dataset.orig){t.removeAttribute("srcset");t.src=t.dataset.orig;delete t.dataset.orig}},true);
 
 /* ---------- MENU: read live from the shop's Square Item Library (api/menu.js) ---------- */
 let M;
@@ -90,16 +101,12 @@ const once=["Fresh flowers","Coffee bar","Downtown Omemee","Pre-orders open"].ma
 $("#ribbon").innerHTML=once+once+once+once;
 
 /* ---------- TILES ---------- */
-const tile=(f,i)=>`<a class="tile" href="#p/${encodeURIComponent(f.id)}"><span class="pic">${f.out?`<span class="flag out">Sold out</span>`:f.tag?`<span class="flag">${esc(f.tag)}</span>`:isXmas(f)?`<span class="flag">Christmas</span>`:""}${f.img?`<img class="photo" src="${esc(f.img)}" style="object-position:${esc(f.focus||"50% 50%")}" alt="" loading="lazy">`:`<img src="${i%4===0||i%4===3?SPRIGF:SPRIG}" alt="">`}</span><b>${esc(f.n)}</b><span class="pr">${fromP(f).replace(/\.00$/,"")}</span></a>`;
+const tile=(f,i)=>`<a class="tile" href="#p/${encodeURIComponent(f.id)}"><span class="pic">${f.out?`<span class="flag out">Sold out</span>`:f.tag?`<span class="flag">${esc(f.tag)}</span>`:isXmas(f)?`<span class="flag">Christmas</span>`:""}${f.img?`<img class="photo" ${imgAt(f.img,TILE,"(min-width:900px) 260px, 45vw")} style="object-position:${esc(f.focus||"50% 50%")}" alt="" loading="lazy">`:`<img src="${i%4===0||i%4===3?SPRIGF:SPRIG}" alt="">`}</span><b>${esc(f.n)}</b><span class="pr">${fromP(f).replace(/\.00$/,"")}</span></a>`;
 /* product page photo gallery: swipe on phones, thumbnails underneath */
-const gallery=i=>`<div class="gallery"><div class="g-track">${i.imgs.map((u,k)=>`<img class="sheet-pic" src="${esc(u)}" style="object-position:${k?"50% 50%":esc(i.focus||"50% 50%")}" alt="${esc(i.n)}, photo ${k+1} of ${i.imgs.length}"${k?' loading="lazy"':""}>`).join("")}</div><div class="g-thumbs">${i.imgs.map((u,k)=>`<button type="button" data-g="${k}" aria-label="Show photo ${k+1}"${k?"":' aria-current="true"'}><img src="${esc(u)}" alt=""></button>`).join("")}</div></div>`;
+const gallery=i=>`<div class="gallery"><div class="g-track">${i.imgs.map((u,k)=>`<img class="sheet-pic" ${imgAt(u,WIDE,"(min-width:900px) 560px, 100vw")} style="object-position:${k?"50% 50%":esc(i.focus||"50% 50%")}" alt="${esc(i.n)}, photo ${k+1} of ${i.imgs.length}"${k?' loading="lazy"':""}>`).join("")}</div><div class="g-thumbs">${i.imgs.map((u,k)=>`<button type="button" data-g="${k}" aria-label="Show photo ${k+1}"${k?"":' aria-current="true"'}><img ${imgAt(u,THUMB,"76px")} alt="" loading="lazy"></button>`).join("")}</div></div>`;
 document.addEventListener("click",e=>{const b=e.target.closest("[data-g]");if(!b)return;const t=b.closest(".gallery").querySelector(".g-track");t.scrollTo({left:+b.dataset.g*t.clientWidth,behavior:"smooth"})});
 document.addEventListener("scroll",e=>{const t=e.target;if(!t.classList||!t.classList.contains("g-track"))return;const k=Math.round(t.scrollLeft/t.clientWidth);t.parentNode.querySelectorAll("[data-g]").forEach(b=>{if(+b.dataset.g===k)b.setAttribute("aria-current","true");else b.removeAttribute("aria-current")})},true);
 
-/* hero tiles with the shop's own photos (public/img/): the wrap opens all flowers, Pre-orders opens the holiday page */
-const photoTile=(sel,img,alt,label,href)=>{const c=$(sel);c.href=href;c.classList.add("has-photo");c.innerHTML=`<img class="photo" src="${img}" style="object-position:50% 45%" alt="${esc(alt)}"><span>${esc(label)}</span>`};
-photoTile(".collage .c1","/img/signature-wrap.webp","Signature wrap bouquet","Signature wrap","#flowers");
-photoTile(".collage .c3","/img/preorder.webp","Christmas pre-order flowers","Pre-orders","#holiday");
 
 /* holiday page: the Christmas items from shop-settings.json, plus anything named "Holiday" */
 const HOLIDAY=FLOWERS.filter(f=>f.xmas||/holiday/i.test(f.n));
@@ -114,12 +121,12 @@ const priceLabel=i=>i.out?"Sold out":fromP(i);
 const feat=allDrinks().filter(d=>d.tag&&!d.out);
 $("#featDrinks").innerHTML=feat.concat(allDrinks().filter(d=>!d.tag&&!d.out)).slice(0,4).map(d=>`<button class="drink" type="button" data-id="${d.id}"><span class="nm">${esc(d.n)}</span><span class="dots"></span><span class="pr">${money(minP(d))}</span></button>`).join("");
 /* home page coffee picture: the Latte's photo from Square (drawn cup until it has one) */
-{const l=allDrinks().find(d=>/^latte$/i.test(d.n.trim())&&d.img);if(l){const c=$(".coffeepic");c.insertAdjacentHTML("afterbegin",`<img class="photo" src="${esc(l.img)}" style="object-position:${esc(l.focus||"50% 50%")}" alt="A latte from the Studio Seven coffee bar" loading="lazy">`);c.removeAttribute("aria-hidden");c.querySelector("svg").remove()}}
+{const l=allDrinks().find(d=>/^latte$/i.test(d.n.trim())&&d.img);if(l){const c=$(".coffeepic");c.insertAdjacentHTML("afterbegin",`<img class="photo" ${imgAt(l.img,TILE,"(min-width:900px) 480px, 92vw")} style="object-position:${esc(l.focus||"50% 50%")}" alt="A latte from the Studio Seven coffee bar" loading="lazy">`);c.removeAttribute("aria-hidden");c.querySelector("svg").remove()}}
 const cats=Object.keys(COFFEE);
 $("#coffeeTabs").innerHTML=cats.map((c,i)=>`<button class="cat" type="button" aria-pressed="${i===0}" data-cat="${i}">${esc(c)}</button>`).join("");
 /* a small square photo beside each drink: the item's first photo in Square, or a drawn cup until one is added */
 const CUP=`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20h22v8a11 11 0 0 1-22 0z"/><path d="M33 22h2.5a4.5 4.5 0 0 1 0 9H32"/><path d="M8 41h28"/><path d="M18 9c-1.5 2 1.5 3.5 0 6M24 8c-1.5 2 1.5 3.5 0 6"/></svg>`;
-const thumb=i=>i.img?`<span class="thumb"><img src="${esc(i.img)}" style="object-position:${esc(i.focus||"50% 50%")}" alt="" loading="lazy"></span>`:`<span class="thumb ph" aria-hidden="true">${CUP}</span>`;
+const thumb=i=>i.img?`<span class="thumb"><img ${imgAt(i.img,THUMB,"76px")} style="object-position:${esc(i.focus||"50% 50%")}" alt="" loading="lazy"></span>`:`<span class="thumb ph" aria-hidden="true">${CUP}</span>`;
 $("#coffeeList").innerHTML=cats.map((c,ci)=>`<h2 id="cat-${ci}">${esc(c)}</h2><div class="cat-items" style="--rows:${Math.ceil(COFFEE[c].length/2)}">`+COFFEE[c].map(i=>`<button class="dish${i.out?" out":""}" type="button" data-id="${i.id}">${thumb(i)}<span class="tx"><span class="r"><span class="nm">${esc(i.n)}${i.tag?`<span class="tagx">${esc(i.tag)}</span>`:""}</span><span class="dots"></span><span class="pr">${priceLabel(i)}</span></span>${i.d?`<span class="ds">${esc(i.d)}</span>`:""}</span></button>`).join("")+`</div>`).join("");
 if(!cats.length)$("#coffeeList").innerHTML='<p class="empty">Our coffee menu is coming soon.</p>';
 $("#coffeeTabs").addEventListener("click",e=>{const b=e.target.closest("[data-cat]");if(!b)return;
@@ -138,7 +145,7 @@ function closeSheet(){$("#scrim").classList.remove("on");$("#sheet").classList.r
 $("#scrim").addEventListener("click",()=>{if(!paying)closeSheet()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!paying)closeSheet()});
 $("#sheet").addEventListener("click",e=>{if(e.target.closest("[data-close]")&&!paying)closeSheet()});
-const pic=i=>pageMode&&(i.imgs||[]).length>1?gallery(i):i.img?`<img class="sheet-pic" src="${esc(i.img)}" style="object-position:${esc(i.focus||"50% 50%")}" alt="">`:"";
+const pic=i=>pageMode&&(i.imgs||[]).length>1?gallery(i):i.img?`<img class="sheet-pic" ${imgAt(i.img,WIDE,"(min-width:900px) 560px, 100vw")} style="object-position:${esc(i.focus||"50% 50%")}" alt="">`:"";
 const head=(t,sub,price)=>`<div class="sheet-h"><div>${pageMode?`<h1>${t}</h1>`:`<h2 id="sheetTitle">${t}</h2>`}${pageMode&&price?`<p class="pdp-price">${price}</p>`:""}${sub?`<p>${sub}</p>`:""}</div>${pageMode?"":`<button class="x" type="button" data-close aria-label="Close">×</button>`}</div>`;
 const choice=(name,opts,sel=0,key=name)=>`<div class="field"><span class="legend">${esc(name)}</span><div class="choice${opts.length>5?" many":""}" data-seg="${esc(key)}">${opts.map((o,i)=>`<button type="button" aria-pressed="${i===sel}" data-i="${i}"${o.off?" disabled":""}>${esc(o.n)}${o.d?`<small>+${money(o.d)}</small>`:""}${o.s?`<small>${esc(o.s)}</small>`:""}${o.off?`<small>Sold out</small>`:""}</button>`).join("")}</div></div>`;
 function wire(root,cb){root.querySelectorAll("[data-seg]").forEach(g=>g.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.disabled)return;g.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));cb&&cb()}))}
