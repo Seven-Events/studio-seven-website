@@ -64,6 +64,8 @@ h1,h2,h3{font-weight:600;letter-spacing:-.03em;line-height:1.02}
 .notes dt,.foot span,.ribbon span,.tile .flag,.tagx{font-weight:600;text-transform:uppercase;letter-spacing:.12em;font-size:.72rem}
 .ribbon span{font-size:.78rem}
 .foot span{font-size:.76rem}
+.foot-addr{font-style:normal;font-size:.95rem}
+.foot-addr a{color:inherit;text-decoration:underline;text-underline-offset:3px}
 .topnav a,.nav a{font-variant:normal!important;letter-spacing:0!important;font-size:.95rem!important;font-weight:500}
 .topnav a[aria-current="page"]{font-weight:600}
 @media (min-width:900px){
